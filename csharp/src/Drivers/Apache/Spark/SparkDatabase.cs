@@ -34,16 +34,6 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Spark
             return Connect(properties, proxy: default);
         }
 
-        //public ProxyConnection<TCLIService.IAsync> Connect<TMock>(IReadOnlyDictionary<string, string>? properties, TMock? proxy = default)
-        //    where TMock : MockServerBase<TCLIService.IAsync>, TCLIService.IAsync
-        //{
-        //    IReadOnlyDictionary<string, string> combinedProperties = MergeDictionaries(this.properties, properties);
-        //    SparkConnection connection = new(combinedProperties, proxy);
-        //    proxy?.SetNewServer(connection.NewLiveServerAsync);
-        //    connection.OpenAsync().Wait();
-        //    return connection;
-        //}
-
         public ProxyConnection<TCLIService.IAsync> Connect(IReadOnlyDictionary<string, string>? properties, MockServerBase<TCLIService.IAsync>? proxy)
         {
             IReadOnlyDictionary<string, string> combinedProperties = MergeDictionaries(this.properties, properties);
@@ -51,10 +41,6 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Spark
             connection.OpenAsync().Wait();
             return connection;
         }
-
-        //public ProxyConnection<TCLIService.IAsync> Connect(IReadOnlyDictionary<string, string>? properties, TCLIService.IAsync? proxy)
-        //{
-        //}
 
         private static IReadOnlyDictionary<TKey, TValue> MergeDictionaries<TKey, TValue>(params IReadOnlyDictionary<TKey, TValue>?[] dictionaries)
             where TKey : notnull

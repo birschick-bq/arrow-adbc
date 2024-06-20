@@ -17,11 +17,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Apache.Arrow.Types;
 using Apache.Hive.Service.Rpc.Thrift;
 
 namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Spark
@@ -42,80 +39,95 @@ namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Spark
         internal class ThriftClientAsyncProxy : TCLIService.IAsync
         {
             public Task<TCancelDelegationTokenResp> CancelDelegationToken(TCancelDelegationTokenReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
             public Task<TCancelOperationResp> CancelOperation(TCancelOperationReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
             public Task<TCloseOperationResp> CloseOperation(TCloseOperationReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
             public Task<TCloseSessionResp> CloseSession(TCloseSessionReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
             public Task<TDownloadDataResp> DownloadData(TDownloadDataReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
             public Task<TExecuteStatementResp> ExecuteStatement(TExecuteStatementReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
             public Task<TFetchResultsResp> FetchResults(TFetchResultsReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
             public Task<TGetCatalogsResp> GetCatalogs(TGetCatalogsReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
             public Task<TGetColumnsResp> GetColumns(TGetColumnsReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
             public Task<TGetCrossReferenceResp> GetCrossReference(TGetCrossReferenceReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
             public Task<TGetDelegationTokenResp> GetDelegationToken(TGetDelegationTokenReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
             public Task<TGetFunctionsResp> GetFunctions(TGetFunctionsReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
             public Task<TGetInfoResp> GetInfo(TGetInfoReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
             public Task<TGetOperationStatusResp> GetOperationStatus(TGetOperationStatusReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
             public Task<TGetPrimaryKeysResp> GetPrimaryKeys(TGetPrimaryKeysReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
             public Task<TGetQueryIdResp> GetQueryId(TGetQueryIdReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
             public Task<TGetResultSetMetadataResp> GetResultSetMetadata(TGetResultSetMetadataReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
             public Task<TGetSchemasResp> GetSchemas(TGetSchemasReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
             public Task<TGetTablesResp> GetTables(TGetTablesReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
             public Task<TGetTableTypesResp> GetTableTypes(TGetTableTypesReq req, CancellationToken cancellationToken = default)
             {
                 TStatus status = new(TStatusCode.SUCCESS_STATUS);
                 StringArray.Builder stringBuilder = new();
                 stringBuilder.Append("TABLE");
                 stringBuilder.Append("VIEW");
+                TStringColumn stringColumn = new(stringBuilder.Build());
                 TTypeDesc stringTypeDesc = new()
                 {
                     Types = [ new TTypeEntry() { PrimitiveEntry = new TPrimitiveTypeEntry(TTypeId.STRING_TYPE) } ]
                 };
-                List<TColumn> columns = [new TColumn() { StringVal = new TStringColumn(stringBuilder.Build()) }];
-                TRowSet rowSet = new TRowSet()
-                {
-                    ColumnCount = 1,
-                    Columns = columns,
-                };
-                List<TColumnDesc> columnDesc = [new TColumnDesc("table_type", stringTypeDesc, 0)];
-                TTableSchema tableSchema = new()
-                {
-                    Columns = columnDesc,
-                };
-                TGetResultSetMetadataResp resultSetMetadataResp = new(status)
-                {
-                    Schema = tableSchema,
-                };
-                TFetchResultsResp resultSet = new(status)
-                {
-                    ResultSetMetadata = resultSetMetadataResp,
-                    Results = rowSet,
-                };
-                TSparkDirectResults directResults = new()
-                {
-                    ResultSet = resultSet,
-                };
                 TGetTableTypesResp resp = new(status)
                 {
-                    DirectResults = directResults,
+                    DirectResults = new()
+                    {
+                        ResultSet = new(status)
+                        {
+                            ResultSetMetadata = new(status)
+                            {
+                                Schema = new()
+                                {
+                                    Columns = [new TColumnDesc("table_type", stringTypeDesc, 0)],
+                                },
+                            },
+                            Results = new()
+                            {
+                                ColumnCount = 1,
+                                Columns = [new TColumn() { StringVal = stringColumn }],
+                            },
+                        },
+                    },
                 };
 
                 return Task.FromResult(resp);
             }
 
             public Task<TGetTypeInfoResp> GetTypeInfo(TGetTypeInfoReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
             public Task<TOpenSessionResp> OpenSession(TOpenSessionReq req, CancellationToken cancellationToken = default)
             {
-                TOpenSessionResp resp = new()
+                return Task.FromResult(new TOpenSessionResp()
                 {
                     Status = new TStatus(TStatusCode.SUCCESS_STATUS),
                     ServerProtocolVersion = req.Client_protocol,
                     SessionHandle = new TSessionHandle(new THandleIdentifier(Guid.NewGuid().ToByteArray(), Guid.NewGuid().ToByteArray())),
-                };
-                return Task.FromResult(resp);
+                });
             }
 
             public Task<TRenewDelegationTokenResp> RenewDelegationToken(TRenewDelegationTokenReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
             public Task<TSetClientInfoResp> SetClientInfo(TSetClientInfoReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
             public Task<TUploadDataResp> UploadData(TUploadDataReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
         }
     }
