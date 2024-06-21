@@ -61,7 +61,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
 
         internal async Task OpenAsync()
         {
-            this.client = ((MockingConnection<TCLIService.IAsync>)this).DataSourceDriverProxy ?? await ((MockingConnection<TCLIService.IAsync>)this).NewDataSourceDriverAsync();
+            this.client = DataSourceDriverProxy ?? await NewDataSourceDriverAsync();
             var s0 = await this.client.OpenSession(CreateSessionRequest());
             this.sessionHandle = s0.SessionHandle;
         }

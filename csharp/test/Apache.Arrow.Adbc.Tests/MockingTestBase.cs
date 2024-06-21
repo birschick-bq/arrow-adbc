@@ -33,15 +33,15 @@ namespace Apache.Arrow.Adbc.Tests
     /// <summary>
     /// Provides a base class for ADBC tests.
     /// </summary>
-    /// <typeparam name="T">A <see cref="TestConfiguration"/> type to use when accessing test configuration files.</typeparam>
-    /// <typeparam name="M">A <see cref="MockDataSourceBase{T}"/> type to use for mocking tests</typeparam>
+    /// <typeparam name="TConfig">A <see cref="TestConfiguration"/> type to use when accessing test configuration files.</typeparam>
+    /// <typeparam name="TMock">A <see cref="MockDataSourceBase{T}"/> type to use for mocking tests</typeparam>
     /// <remarks>
     /// Constructs a new ProxyTestBase object with an output helper.
     /// </remarks>
     /// <param name="outputHelper">Test output helper for writing test output.</param>
-    public abstract class MockingTestBase<T, M>(ITestOutputHelper? outputHelper) : TestBase<T>(outputHelper)
-        where T : TestConfiguration
-        where M : class
+    public abstract class MockingTestBase<TConfig, TMock>(ITestOutputHelper? outputHelper) : TestBase<TConfig>(outputHelper)
+        where TConfig : TestConfiguration
+        where TMock : class
     {
         /// <summary>
         /// Gets a the Spark ADBC driver with settings from the <see cref="SparkTestConfiguration"/>.
@@ -50,12 +50,12 @@ namespace Apache.Arrow.Adbc.Tests
         /// <param name="connectionOptions">A dictionary of connection options.</param>
         /// <param name="mock">An optional mocker server proxy implementation.</param>
         /// <returns></returns>
-        protected AdbcConnection NewConnection(T? testConfiguration = default, IReadOnlyDictionary<string, string>? connectionOptions = default, MockDataSourceBase<M>? mock = default)
+        protected AdbcConnection NewConnection(TConfig? testConfiguration = default, IReadOnlyDictionary<string, string>? connectionOptions = default, MockDataSourceBase<TMock>? mock = default)
         {
             Dictionary<string, string> parameters = GetDriverParameters(testConfiguration ?? TestConfiguration);
             AdbcDatabase database = NewDriver.Open(parameters);
             IReadOnlyDictionary<string, string> options = connectionOptions ?? new Dictionary<string, string>();
-            AdbcConnection connection = (database is IMockingDatabase<M> mockingDatabase)
+            AdbcConnection connection = (database is IMockingDatabase<TMock> mockingDatabase)
                 ? mockingDatabase.Connect(options, mock)
                 : database.Connect(options);
             return connection;

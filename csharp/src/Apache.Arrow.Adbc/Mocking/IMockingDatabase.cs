@@ -21,18 +21,18 @@ namespace Apache.Arrow.Adbc.Mocking
 {
     /// <summary>
     /// Defines the interface to expose support for a mocking data source driver implementation.
-    /// The intention is that the mock will implement equivalent functionality to the server driver interface
+    /// The intention is that the mock will implement equivalent functionality to the data source driver interface
     /// and that this will facilitates non-connected check-in tests.
     /// </summary>
-    /// <typeparam name="T">An interface the mocking server will implement to mock the server driver functionality.</typeparam>
+    /// <typeparam name="T">An interface the mocking data source will implement to mock the data source driver functionality.</typeparam>
     internal interface IMockingDatabase<T> where T : class
     {
         /// <summary>
-        /// Connects to the data source. If the optional mocking server <c>mock</c> is <c>null</c>, the returned <see cref="AdbcConnection"/> will use
-        /// the actaul data source driver implementation and connect directly with the data source. If the mocking server <c>mock</c> is not <c>null</c>,
-        /// then the mocking server must provice a full or partial implementation of the data source driver interface.
+        /// Connects to the data source. If the optional mocking data source <c>mock</c> is <c>null</c>, the returned <see cref="AdbcConnection"/> will use
+        /// the actaul data source driver implementation and connect directly with the data source. If the mocking data source <c>mock</c> is not <c>null</c>,
+        /// then the mocking data source must provice a full or partial implementation of the data source driver interface.
         /// </summary>
-        /// <param name="properties">The connection properties used to connect to the server.</param>
+        /// <param name="properties">The connection properties used to connect to the data source.</param>
         /// <param name="mock">The mocking data source implementation.</param>
         /// <returns></returns>
         internal MockingConnection<T> Connect(IReadOnlyDictionary<string, string>? properties, MockDataSourceBase<T>? mock);
