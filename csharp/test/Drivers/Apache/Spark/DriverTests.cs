@@ -20,9 +20,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Apache.Arrow.Adbc.Mocking;
 using Apache.Arrow.Adbc.Tests.Metadata;
 using Apache.Arrow.Adbc.Tests.Xunit;
 using Apache.Arrow.Ipc;
+using Apache.Hive.Service.Rpc.Thrift;
 using Xunit;
 using Xunit.Abstractions;
 using ColumnTypeId = Apache.Arrow.Adbc.Drivers.Apache.Spark.SparkConnection.ColumnTypeId;
@@ -467,11 +469,13 @@ namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Spark
 
         /// <summary>
         /// Validates if the driver can call GetTableTypes.
+        /// Note: Uses the mocking data source data generator to test connected and non-connected
         /// </summary>
-        [SkippableFact, Order(9)]
-        public async Task CanGetTableTypes()
+        [SkippableTheory, Order(9)]
+        [MemberData(nameof(MockDataSourceData))]
+        public async Task CanGetTableTypes(MockDataSourceBase<TCLIService.IAsync>? mock)
         {
-            AdbcConnection adbcConnection = NewConnection();
+            AdbcConnection adbcConnection = NewConnection(mock: mock);
 
             using IArrowArrayStream arrowArrayStream = adbcConnection.GetTableTypes();
 
@@ -549,39 +553,12 @@ namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Spark
             Assert.Equal(1, updateResult.AffectedRows);
         }
 
-        /// <summary>
-        /// Validates if the driver can call GetTableTypes.
-        /// </summary>
-        [SkippableFact, Order(13)]
-        public async Task CanGetTableTypesViaProxy()
+        public static IEnumerable<object?[]> MockDataSourceData()
         {
-            var proxy = ThriftClientAsyncMock.NewInstance();
-            AdbcConnection adbcConnection = NewConnection(proxy: proxy);
-
-            using IArrowArrayStream arrowArrayStream = adbcConnection.GetTableTypes();
-
-            RecordBatch recordBatch = await arrowArrayStream.ReadNextRecordBatchAsync();
-
-            StringArray stringArray = (StringArray)recordBatch.Column("table_type");
-
-            List<string> known_types = new List<string>
-            {
-                "TABLE", "VIEW"
-            };
-
-            int results = 0;
-
-            for (int i = 0; i < stringArray.Length; i++)
-            {
-                string value = stringArray.GetString(i);
-
-                if (known_types.Contains(value))
-                {
-                    results++;
-                }
-            }
-
-            Assert.Equal(known_types.Count, results);
+            // Returns no mocking implementation
+            yield return new object?[] { null };
+            // Returns a mocking implementation
+            yield return new object?[] { ThriftClientAsyncMock.NewInstance() };
         }
 
         public static IEnumerable<object[]> CatalogNamePatternData()

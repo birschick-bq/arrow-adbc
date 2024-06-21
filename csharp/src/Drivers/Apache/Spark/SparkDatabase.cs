@@ -16,11 +16,12 @@
 */
 
 using System.Collections.Generic;
+using Apache.Arrow.Adbc.Mocking;
 using Apache.Hive.Service.Rpc.Thrift;
 
 namespace Apache.Arrow.Adbc.Drivers.Apache.Spark
 {
-    public class SparkDatabase : AdbcDatabase, IProxyDatabase<TCLIService.IAsync>
+    internal class SparkDatabase : AdbcDatabase, IMockingDatabase<TCLIService.IAsync>
     {
         readonly IReadOnlyDictionary<string, string> properties;
 
@@ -31,13 +32,13 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Spark
 
         public override AdbcConnection Connect(IReadOnlyDictionary<string, string>? properties)
         {
-            return Connect(properties, proxy: default);
+            return ((IMockingDatabase<TCLIService.IAsync>)this).Connect(properties, mock: default);
         }
 
-        public ProxyConnection<TCLIService.IAsync> Connect(IReadOnlyDictionary<string, string>? properties, MockServerBase<TCLIService.IAsync>? proxy)
+        MockingConnection<TCLIService.IAsync> IMockingDatabase<TCLIService.IAsync>.Connect(IReadOnlyDictionary<string, string>? properties, MockDataSourceBase<TCLIService.IAsync>? mock)
         {
             IReadOnlyDictionary<string, string> combinedProperties = MergeDictionaries(this.properties, properties);
-            SparkConnection connection = new(combinedProperties, proxy);
+            SparkConnection connection = new(combinedProperties, mock);
             connection.OpenAsync().Wait();
             return connection;
         }

@@ -19,17 +19,18 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Apache.Arrow.Adbc.Mocking;
 using Apache.Hive.Service.Rpc.Thrift;
 
 namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Spark
 {
-    internal class ThriftClientAsyncMock : MockServerBase<TCLIService.IAsync>
+    internal class ThriftClientAsyncMock : MockDataSourceBase<TCLIService.IAsync>
     {
         private ThriftClientAsyncMock(TCLIService.IAsync proxy) : base(proxy)
         {
         }
 
-        internal static MockServerBase<TCLIService.IAsync> NewInstance()
+        internal static MockDataSourceBase<TCLIService.IAsync> NewInstance()
         {
             var result = new ThriftClientAsyncMock(new ThriftClientAsyncProxy());
 

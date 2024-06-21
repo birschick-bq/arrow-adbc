@@ -22,6 +22,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Apache.Arrow.Adbc.Mocking;
 using Apache.Arrow.Ipc;
 using Apache.Arrow.Types;
 using Xunit;
@@ -32,28 +33,31 @@ namespace Apache.Arrow.Adbc.Tests
     /// <summary>
     /// Provides a base class for ADBC tests.
     /// </summary>
-    /// <typeparam name="T">A TestConfiguration type to use when accessing test configuration files.</typeparam>
+    /// <typeparam name="T">A <see cref="TestConfiguration"/> type to use when accessing test configuration files.</typeparam>
+    /// <typeparam name="M">A <see cref="MockDataSourceBase{T}"/> type to use for mocking tests</typeparam>
     /// <remarks>
     /// Constructs a new ProxyTestBase object with an output helper.
     /// </remarks>
     /// <param name="outputHelper">Test output helper for writing test output.</param>
-    public abstract class ProxyTestBase<T, P>(ITestOutputHelper? outputHelper) : TestBase<T>(outputHelper)
+    public abstract class MockingTestBase<T, M>(ITestOutputHelper? outputHelper) : TestBase<T>(outputHelper)
         where T : TestConfiguration
-        where P : class
+        where M : class
     {
         /// <summary>
         /// Gets a the Spark ADBC driver with settings from the <see cref="SparkTestConfiguration"/>.
         /// </summary>
         /// <param name="testConfiguration"><see cref="Tests.TestConfiguration"/></param>
         /// <param name="connectionOptions">A dictionary of connection options.</param>
-        /// <param name="proxy">An optional mocker server proxy implementation.</param>
+        /// <param name="mock">An optional mocker server proxy implementation.</param>
         /// <returns></returns>
-        protected AdbcConnection NewConnection(T? testConfiguration = null, IReadOnlyDictionary<string, string>? connectionOptions = null, MockServerBase<P>? proxy = default)
+        protected AdbcConnection NewConnection(T? testConfiguration = default, IReadOnlyDictionary<string, string>? connectionOptions = default, MockDataSourceBase<M>? mock = default)
         {
             Dictionary<string, string> parameters = GetDriverParameters(testConfiguration ?? TestConfiguration);
             AdbcDatabase database = NewDriver.Open(parameters);
             IReadOnlyDictionary<string, string> options = connectionOptions ?? new Dictionary<string, string>();
-            AdbcConnection connection = (database is IProxyDatabase<P> proxyDatabase) ? proxyDatabase.Connect(options, proxy) : database.Connect(options);
+            AdbcConnection connection = (database is IMockingDatabase<M> mockingDatabase)
+                ? mockingDatabase.Connect(options, mock)
+                : database.Connect(options);
             return connection;
         }
     }

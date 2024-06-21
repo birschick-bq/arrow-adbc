@@ -29,6 +29,7 @@ using System.Threading.Tasks;
 using Apache.Arrow.Adbc.Drivers.Apache.Hive2;
 using Apache.Arrow.Adbc.Drivers.Apache.Thrift;
 using Apache.Arrow.Adbc.Extensions;
+using Apache.Arrow.Adbc.Mocking;
 using Apache.Arrow.Ipc;
 using Apache.Arrow.Types;
 using Apache.Hive.Service.Rpc.Thrift;
@@ -37,7 +38,7 @@ using Thrift.Protocol;
 
 namespace Apache.Arrow.Adbc.Drivers.Apache.Spark
 {
-    public class SparkConnection : HiveServer2Connection
+    internal class SparkConnection : HiveServer2Connection
     {
         private readonly string UserAgent = $"{InfoDriverName.Replace(" ", "")}/{ProductVersionDefault}";
 
@@ -252,7 +253,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Spark
             TIMESTAMP_WITH_TIMEZONE = 2014,
         }
 
-        internal SparkConnection(IReadOnlyDictionary<string, string>? properties, MockServerBase<TCLIService.IAsync>? proxy = default)
+        internal SparkConnection(IReadOnlyDictionary<string, string>? properties, MockDataSourceBase<TCLIService.IAsync>? proxy = default)
             : base(properties, proxy)
         {
             _productVersion = new Lazy<string>(() => GetProductVersion(), LazyThreadSafetyMode.PublicationOnly);

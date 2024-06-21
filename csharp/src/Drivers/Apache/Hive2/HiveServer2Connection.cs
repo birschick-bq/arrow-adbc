@@ -17,9 +17,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Apache.Arrow.Adbc.Mocking;
 using Apache.Arrow.Ipc;
 using Apache.Hive.Service.Rpc.Thrift;
 using Thrift.Protocol;
@@ -27,7 +27,7 @@ using Thrift.Transport;
 
 namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
 {
-    public abstract class HiveServer2Connection : ProxyConnection<TCLIService.IAsync>
+    internal abstract class HiveServer2Connection : MockingConnection<TCLIService.IAsync>
     {
         const string userAgent = "AdbcExperimental/0.0";
 
@@ -39,7 +39,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
         private readonly Lazy<string> _vendorVersion;
         private readonly Lazy<string> _vendorName;
 
-        internal HiveServer2Connection(IReadOnlyDictionary<string, string>? properties, MockServerBase<TCLIService.IAsync>? proxy = default) : base(proxy)
+        internal HiveServer2Connection(IReadOnlyDictionary<string, string>? properties, MockDataSourceBase<TCLIService.IAsync>? mock = default) : base(mock)
         {
             this.properties = properties ?? new Dictionary<string, string>();
             // Note: "LazyThreadSafetyMode.PublicationOnly" is thread-safe initialization where
@@ -61,12 +61,12 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
 
         internal async Task OpenAsync()
         {
-            this.client = Proxy ?? await NewConnectedServerAsync();
+            this.client = ((MockingConnection<TCLIService.IAsync>)this).DataSourceDriverProxy ?? await ((MockingConnection<TCLIService.IAsync>)this).NewDataSourceDriverAsync();
             var s0 = await this.client.OpenSession(CreateSessionRequest());
             this.sessionHandle = s0.SessionHandle;
         }
 
-        internal override async Task<TCLIService.IAsync> NewConnectedServerAsync()
+        internal async override Task<TCLIService.IAsync> NewDataSourceDriverAsync()
         {
             TProtocol protocol = await CreateProtocolAsync();
             this.transport = protocol.Transport;

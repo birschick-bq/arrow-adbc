@@ -28,7 +28,7 @@ using Thrift.Transport.Client;
 
 namespace Apache.Arrow.Adbc.Drivers.Apache.Impala
 {
-    public class ImpalaStatement : HiveServer2Statement
+    internal class ImpalaStatement : HiveServer2Statement
     {
         internal ImpalaStatement(ImpalaConnection connection)
             : base(connection)
