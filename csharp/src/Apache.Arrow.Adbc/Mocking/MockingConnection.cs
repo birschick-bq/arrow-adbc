@@ -22,7 +22,7 @@ namespace Apache.Arrow.Adbc.Mocking
     /// <summary>
     /// Provides support for a <see cref="AdbcConnection"/> where it supports using a mocking data source implementation.
     /// </summary>
-    /// <typeparam name="T">An data source interface the mock will implement to mimick the source driver functionality.</typeparam>
+    /// <typeparam name="T">An data source interface the mock will implement to mimick the data source driver functionality.</typeparam>
     internal abstract class MockingConnection<T> : AdbcConnection where T : class
     {
         /// <summary>
@@ -40,7 +40,7 @@ namespace Apache.Arrow.Adbc.Mocking
         /// <summary>
         /// The data source proxy implementation for the data source driver interface.
         /// </summary>
-        internal T? DataSourceDriverProxy { get; set; }
+        internal T? DataSourceDriverProxy { get; }
 
         /// <summary>
         /// Provides a way to create a new instance of the data source's connected implementation.
