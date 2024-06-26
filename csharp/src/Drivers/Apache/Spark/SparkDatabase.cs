@@ -16,10 +16,12 @@
 */
 
 using System.Collections.Generic;
+using Apache.Arrow.Adbc.Mocking;
+using Apache.Hive.Service.Rpc.Thrift;
 
 namespace Apache.Arrow.Adbc.Drivers.Apache.Spark
 {
-    public class SparkDatabase : AdbcDatabase
+    internal class SparkDatabase : AdbcDatabase, IMockingDatabase<TCLIService.IAsync>
     {
         readonly IReadOnlyDictionary<string, string> properties;
 
@@ -30,9 +32,30 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Spark
 
         public override AdbcConnection Connect(IReadOnlyDictionary<string, string>? properties)
         {
-            SparkConnection connection = new SparkConnection(this.properties);
+            return ((IMockingDatabase<TCLIService.IAsync>)this).Connect(properties, mockFactory: default);
+        }
+
+        MockingConnection<TCLIService.IAsync> IMockingDatabase<TCLIService.IAsync>.Connect(IReadOnlyDictionary<string, string>? properties, IMockDataSourceFactory<TCLIService.IAsync>? mockFactory)
+        {
+            IReadOnlyDictionary<string, string> combinedProperties = MergeDictionaries(this.properties, properties);
+            SparkConnection connection = new(combinedProperties, mockFactory);
             connection.OpenAsync().Wait();
             return connection;
+        }
+
+        private static IReadOnlyDictionary<TKey, TValue> MergeDictionaries<TKey, TValue>(params IReadOnlyDictionary<TKey, TValue>?[] dictionaries)
+            where TKey : notnull
+        {
+            var mergedDictionary = new Dictionary<TKey, TValue>();
+            foreach (IReadOnlyDictionary<TKey, TValue>? dictionary in dictionaries)
+            {
+                if (dictionary == null) continue;
+                foreach (KeyValuePair<TKey, TValue> kvp in dictionary)
+                {
+                    mergedDictionary[kvp.Key] = kvp.Value;
+                }
+            }
+            return mergedDictionary;
         }
     }
 }

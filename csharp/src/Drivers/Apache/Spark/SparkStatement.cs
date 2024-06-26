@@ -26,7 +26,7 @@ using Apache.Hive.Service.Rpc.Thrift;
 
 namespace Apache.Arrow.Adbc.Drivers.Apache.Spark
 {
-    public class SparkStatement : HiveServer2Statement
+    internal class SparkStatement : HiveServer2Statement
     {
         internal SparkStatement(SparkConnection connection)
             : base(connection)

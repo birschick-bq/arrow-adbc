@@ -20,9 +20,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Apache.Arrow.Adbc.Mocking;
 using Apache.Arrow.Adbc.Tests.Metadata;
 using Apache.Arrow.Adbc.Tests.Xunit;
 using Apache.Arrow.Ipc;
+using Apache.Hive.Service.Rpc.Thrift;
 using Xunit;
 using Xunit.Abstractions;
 using ColumnTypeId = Apache.Arrow.Adbc.Drivers.Apache.Spark.SparkConnection.ColumnTypeId;
@@ -76,6 +78,7 @@ namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Spark
         public DriverTests(ITestOutputHelper? outputHelper) : base(outputHelper)
         {
             Skip.IfNot(Utils.CanExecuteTestConfig(TestConfigVariable));
+
         }
 
         /// <summary>
@@ -466,11 +469,13 @@ namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Spark
 
         /// <summary>
         /// Validates if the driver can call GetTableTypes.
+        /// Note: Uses the mocking data source data generator to test connected and non-connected
         /// </summary>
-        [SkippableFact, Order(9)]
-        public async Task CanGetTableTypes()
+        [SkippableTheory, Order(9)]
+        [MemberData(nameof(MockDataSourceData))]
+        public async Task CanGetTableTypes(IMockDataSourceFactory<TCLIService.IAsync>? mockFactory)
         {
-            AdbcConnection adbcConnection = NewConnection();
+            AdbcConnection adbcConnection = NewConnection(mockFactory: mockFactory);
 
             using IArrowArrayStream arrowArrayStream = adbcConnection.GetTableTypes();
 
@@ -546,6 +551,14 @@ namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Spark
             UpdateResult updateResult = await statement.ExecuteUpdateAsync();
 
             Assert.Equal(1, updateResult.AffectedRows);
+        }
+
+        public static IEnumerable<object?[]> MockDataSourceData()
+        {
+            // Returns no mocking implementation
+            yield return new object?[] { null };
+            // Returns a mocking implementation
+            yield return new object?[] { new ThriftClientAsyncMock.ThriftClientAsyncMockFactory() };
         }
 
         public static IEnumerable<object[]> CatalogNamePatternData()
