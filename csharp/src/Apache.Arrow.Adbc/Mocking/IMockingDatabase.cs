@@ -33,8 +33,8 @@ namespace Apache.Arrow.Adbc.Mocking
         /// then the mocking data source must provice a full or partial implementation of the data source driver interface.
         /// </summary>
         /// <param name="properties">The connection properties used to connect to the data source.</param>
-        /// <param name="mock">The mocking data source implementation.</param>
+        /// <param name="mockFactory">The mocking data source implementation.</param>
         /// <returns></returns>
-        internal MockingConnection<T> Connect(IReadOnlyDictionary<string, string>? properties, MockDataSourceBase<T>? mock);
+        internal MockingConnection<T> Connect(IReadOnlyDictionary<string, string>? properties, IMockDataSourceFactory<T>? mockFactory);
     }
 }

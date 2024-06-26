@@ -32,13 +32,13 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Spark
 
         public override AdbcConnection Connect(IReadOnlyDictionary<string, string>? properties)
         {
-            return ((IMockingDatabase<TCLIService.IAsync>)this).Connect(properties, mock: default);
+            return ((IMockingDatabase<TCLIService.IAsync>)this).Connect(properties, mockFactory: default);
         }
 
-        MockingConnection<TCLIService.IAsync> IMockingDatabase<TCLIService.IAsync>.Connect(IReadOnlyDictionary<string, string>? properties, MockDataSourceBase<TCLIService.IAsync>? mock)
+        MockingConnection<TCLIService.IAsync> IMockingDatabase<TCLIService.IAsync>.Connect(IReadOnlyDictionary<string, string>? properties, IMockDataSourceFactory<TCLIService.IAsync>? mockFactory)
         {
             IReadOnlyDictionary<string, string> combinedProperties = MergeDictionaries(this.properties, properties);
-            SparkConnection connection = new(combinedProperties, mock);
+            SparkConnection connection = new(combinedProperties, mockFactory);
             connection.OpenAsync().Wait();
             return connection;
         }

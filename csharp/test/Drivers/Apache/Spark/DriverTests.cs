@@ -473,9 +473,9 @@ namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Spark
         /// </summary>
         [SkippableTheory, Order(9)]
         [MemberData(nameof(MockDataSourceData))]
-        public async Task CanGetTableTypes(MockDataSourceBase<TCLIService.IAsync>? mock)
+        public async Task CanGetTableTypes(IMockDataSourceFactory<TCLIService.IAsync>? mockFactory)
         {
-            AdbcConnection adbcConnection = NewConnection(mock: mock);
+            AdbcConnection adbcConnection = NewConnection(mockFactory: mockFactory);
 
             using IArrowArrayStream arrowArrayStream = adbcConnection.GetTableTypes();
 
@@ -558,7 +558,7 @@ namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Spark
             // Returns no mocking implementation
             yield return new object?[] { null };
             // Returns a mocking implementation
-            yield return new object?[] { ThriftClientAsyncMock.NewInstance() };
+            yield return new object?[] { new ThriftClientAsyncMock.ThriftClientAsyncMockFactory() };
         }
 
         public static IEnumerable<object[]> CatalogNamePatternData()

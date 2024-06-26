@@ -21,115 +21,148 @@ using System.Threading;
 using System.Threading.Tasks;
 using Apache.Arrow.Adbc.Mocking;
 using Apache.Hive.Service.Rpc.Thrift;
+using Thrift.Protocol;
 
 namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Spark
 {
-    internal class ThriftClientAsyncMock : MockDataSourceBase<TCLIService.IAsync>
+    internal class ThriftClientAsyncMock : IMockDataSource<TCLIService.IAsync>, TCLIService.IAsync
     {
-        private ThriftClientAsyncMock(TCLIService.IAsync proxy) : base(proxy)
+        private readonly Lazy<Task<TCLIService.IAsync>> _client;
+        private readonly Dictionary<TBase, TBase> _cache = [];
+
+        internal class ThriftClientAsyncMockFactory : IMockDataSourceFactory<TCLIService.IAsync>
         {
+            public IMockDataSource<TCLIService.IAsync> NewInstance(Func<Task<TCLIService.IAsync>> newDataSourceDriverAsync)
+            {
+                return new ThriftClientAsyncMock(new Lazy<Task<TCLIService.IAsync>>(newDataSourceDriverAsync));
+            }
         }
 
-        internal static MockDataSourceBase<TCLIService.IAsync> NewInstance()
+        private ThriftClientAsyncMock(Lazy<Task<TCLIService.IAsync>> client)
         {
-            var result = new ThriftClientAsyncMock(new ThriftClientAsyncProxy());
-
-            return result;
+            _client = client;
         }
 
-        internal class ThriftClientAsyncProxy : TCLIService.IAsync
+        public TCLIService.IAsync DataSourceDriverProxy => this;
+
+        public Task<TCancelDelegationTokenResp> CancelDelegationToken(TCancelDelegationTokenReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<TCancelOperationResp> CancelOperation(TCancelOperationReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<TCloseOperationResp> CloseOperation(TCloseOperationReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<TCloseSessionResp> CloseSession(TCloseSessionReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<TDownloadDataResp> DownloadData(TDownloadDataReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<TExecuteStatementResp> ExecuteStatement(TExecuteStatementReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<TFetchResultsResp> FetchResults(TFetchResultsReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<TGetCatalogsResp> GetCatalogs(TGetCatalogsReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<TGetColumnsResp> GetColumns(TGetColumnsReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<TGetCrossReferenceResp> GetCrossReference(TGetCrossReferenceReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<TGetDelegationTokenResp> GetDelegationToken(TGetDelegationTokenReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<TGetFunctionsResp> GetFunctions(TGetFunctionsReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<TGetInfoResp> GetInfo(TGetInfoReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<TGetOperationStatusResp> GetOperationStatus(TGetOperationStatusReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<TGetPrimaryKeysResp> GetPrimaryKeys(TGetPrimaryKeysReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<TGetQueryIdResp> GetQueryId(TGetQueryIdReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<TGetResultSetMetadataResp> GetResultSetMetadata(TGetResultSetMetadataReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<TGetSchemasResp> GetSchemas(TGetSchemasReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<TGetTablesResp> GetTables(TGetTablesReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public async Task<TGetTableTypesResp> GetTableTypes(TGetTableTypesReq req, CancellationToken cancellationToken = default)
         {
-            public Task<TCancelDelegationTokenResp> CancelDelegationToken(TCancelDelegationTokenReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+            return await GetCachedOrLive(req, (await _client.Value).GetTableTypes, cancellationToken);
 
-            public Task<TCancelOperationResp> CancelOperation(TCancelOperationReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+            //if (_cache.ContainsKey(req) && _cache[req] is TGetTableTypesResp cachedResp) return cachedResp;
 
-            public Task<TCloseOperationResp> CloseOperation(TCloseOperationReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+            //TCLIService.IAsync client = await _client.Value;
+            //TGetTableTypesResp actualResp = await client.GetTableTypes(req, cancellationToken);
+            //_cache[req] = actualResp;
+            //return actualResp;
 
-            public Task<TCloseSessionResp> CloseSession(TCloseSessionReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+            //TStatus status = new(TStatusCode.SUCCESS_STATUS);
+            //StringArray.Builder stringBuilder = new();
+            //stringBuilder.Append("TABLE");
+            //stringBuilder.Append("VIEW");
+            //TStringColumn stringColumn = new(stringBuilder.Build());
+            //TTypeDesc stringTypeDesc = new()
+            //{
+            //    Types = [new TTypeEntry() { PrimitiveEntry = new TPrimitiveTypeEntry(TTypeId.STRING_TYPE) }]
+            //};
+            //TGetTableTypesResp resp = new(status)
+            //{
+            //    DirectResults = new()
+            //    {
+            //        ResultSet = new(status)
+            //        {
+            //            ResultSetMetadata = new(status)
+            //            {
+            //                Schema = new()
+            //                {
+            //                    Columns = [new TColumnDesc("table_type", stringTypeDesc, 0)],
+            //                },
+            //            },
+            //            Results = new()
+            //            {
+            //                ColumnCount = 1,
+            //                Columns = [new TColumn() { StringVal = stringColumn }],
+            //            },
+            //        },
+            //    },
+            //};
 
-            public Task<TDownloadDataResp> DownloadData(TDownloadDataReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+            //return resp;
+        }
 
-            public Task<TExecuteStatementResp> ExecuteStatement(TExecuteStatementReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public Task<TGetTypeInfoResp> GetTypeInfo(TGetTypeInfoReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
-            public Task<TFetchResultsResp> FetchResults(TFetchResultsReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public async Task<TOpenSessionResp> OpenSession(TOpenSessionReq req, CancellationToken cancellationToken = default)
+        {
+            return await GetCachedOrLive(req, (await _client.Value).OpenSession, cancellationToken);
 
-            public Task<TGetCatalogsResp> GetCatalogs(TGetCatalogsReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+            //return new TOpenSessionResp()
+            //{
+            //    Status = new TStatus(TStatusCode.SUCCESS_STATUS),
+            //    ServerProtocolVersion = req.Client_protocol,
+            //    SessionHandle = new TSessionHandle(new THandleIdentifier(Guid.NewGuid().ToByteArray(), Guid.NewGuid().ToByteArray())),
+            //};
+        }
 
-            public Task<TGetColumnsResp> GetColumns(TGetColumnsReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public Task<TRenewDelegationTokenResp> RenewDelegationToken(TRenewDelegationTokenReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
-            public Task<TGetCrossReferenceResp> GetCrossReference(TGetCrossReferenceReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public Task<TSetClientInfoResp> SetClientInfo(TSetClientInfoReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
-            public Task<TGetDelegationTokenResp> GetDelegationToken(TGetDelegationTokenReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public Task<TUploadDataResp> UploadData(TUploadDataReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
-            public Task<TGetFunctionsResp> GetFunctions(TGetFunctionsReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        private async Task<TResp> GetCachedOrLive<TReq, TResp>(TReq req, Func<TReq, CancellationToken, Task<TResp>> function, CancellationToken cancellationToken) where TReq : TBase where TResp : TBase
+        {
+            if (_cache.ContainsKey(req) && _cache[req] is TResp cachedResp) return cachedResp;
 
-            public Task<TGetInfoResp> GetInfo(TGetInfoReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-
-            public Task<TGetOperationStatusResp> GetOperationStatus(TGetOperationStatusReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-
-            public Task<TGetPrimaryKeysResp> GetPrimaryKeys(TGetPrimaryKeysReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-
-            public Task<TGetQueryIdResp> GetQueryId(TGetQueryIdReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-
-            public Task<TGetResultSetMetadataResp> GetResultSetMetadata(TGetResultSetMetadataReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-
-            public Task<TGetSchemasResp> GetSchemas(TGetSchemasReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-
-            public Task<TGetTablesResp> GetTables(TGetTablesReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-
-            public Task<TGetTableTypesResp> GetTableTypes(TGetTableTypesReq req, CancellationToken cancellationToken = default)
+            if (_client == null)
             {
-                TStatus status = new(TStatusCode.SUCCESS_STATUS);
-                StringArray.Builder stringBuilder = new();
-                stringBuilder.Append("TABLE");
-                stringBuilder.Append("VIEW");
-                TStringColumn stringColumn = new(stringBuilder.Build());
-                TTypeDesc stringTypeDesc = new()
-                {
-                    Types = [ new TTypeEntry() { PrimitiveEntry = new TPrimitiveTypeEntry(TTypeId.STRING_TYPE) } ]
-                };
-                TGetTableTypesResp resp = new(status)
-                {
-                    DirectResults = new()
-                    {
-                        ResultSet = new(status)
-                        {
-                            ResultSetMetadata = new(status)
-                            {
-                                Schema = new()
-                                {
-                                    Columns = [new TColumnDesc("table_type", stringTypeDesc, 0)],
-                                },
-                            },
-                            Results = new()
-                            {
-                                ColumnCount = 1,
-                                Columns = [new TColumn() { StringVal = stringColumn }],
-                            },
-                        },
-                    },
-                };
-
-                return Task.FromResult(resp);
+                throw new InvalidOperationException();
             }
 
-            public Task<TGetTypeInfoResp> GetTypeInfo(TGetTypeInfoReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+            TResp actualResp = await function(req, cancellationToken);
+            _cache[req] = actualResp;
 
-            public Task<TOpenSessionResp> OpenSession(TOpenSessionReq req, CancellationToken cancellationToken = default)
-            {
-                return Task.FromResult(new TOpenSessionResp()
-                {
-                    Status = new TStatus(TStatusCode.SUCCESS_STATUS),
-                    ServerProtocolVersion = req.Client_protocol,
-                    SessionHandle = new TSessionHandle(new THandleIdentifier(Guid.NewGuid().ToByteArray(), Guid.NewGuid().ToByteArray())),
-                });
-            }
+            // TODO: Serialize/write the cache
 
-            public Task<TRenewDelegationTokenResp> RenewDelegationToken(TRenewDelegationTokenReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-
-            public Task<TSetClientInfoResp> SetClientInfo(TSetClientInfoReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
-
-            public Task<TUploadDataResp> UploadData(TUploadDataReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+            return actualResp;
         }
     }
 }

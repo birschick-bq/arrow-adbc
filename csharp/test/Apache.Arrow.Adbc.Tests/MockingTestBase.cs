@@ -34,7 +34,7 @@ namespace Apache.Arrow.Adbc.Tests
     /// Provides a base class for ADBC tests.
     /// </summary>
     /// <typeparam name="TConfig">A <see cref="TestConfiguration"/> type to use when accessing test configuration files.</typeparam>
-    /// <typeparam name="TMock">A <see cref="MockDataSourceBase{T}"/> type to use for mocking tests</typeparam>
+    /// <typeparam name="TMock">A <see cref="IMockDataSource{T}"/> type to use for mocking tests</typeparam>
     /// <remarks>
     /// Constructs a new ProxyTestBase object with an output helper.
     /// </remarks>
@@ -48,15 +48,15 @@ namespace Apache.Arrow.Adbc.Tests
         /// </summary>
         /// <param name="testConfiguration"><see cref="Tests.TestConfiguration"/></param>
         /// <param name="connectionOptions">A dictionary of connection options.</param>
-        /// <param name="mock">An optional mocker server proxy implementation.</param>
+        /// <param name="mockFactory">An optional mocker server proxy implementation.</param>
         /// <returns></returns>
-        protected AdbcConnection NewConnection(TConfig? testConfiguration = default, IReadOnlyDictionary<string, string>? connectionOptions = default, MockDataSourceBase<TMock>? mock = default)
+        protected AdbcConnection NewConnection(TConfig? testConfiguration = default, IReadOnlyDictionary<string, string>? connectionOptions = default, IMockDataSourceFactory<TMock>? mockFactory = default)
         {
             Dictionary<string, string> parameters = GetDriverParameters(testConfiguration ?? TestConfiguration);
             AdbcDatabase database = NewDriver.Open(parameters);
             IReadOnlyDictionary<string, string> options = connectionOptions ?? new Dictionary<string, string>();
             AdbcConnection connection = (database is IMockingDatabase<TMock> mockingDatabase)
-                ? mockingDatabase.Connect(options, mock)
+                ? mockingDatabase.Connect(options, mockFactory)
                 : database.Connect(options);
             return connection;
         }

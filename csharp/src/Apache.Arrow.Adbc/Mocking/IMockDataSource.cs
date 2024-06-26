@@ -24,26 +24,26 @@ namespace Apache.Arrow.Adbc.Mocking
     /// A container for the mocking data source proxy implementation.
     /// </summary>
     /// <typeparam name="T">The data source driver interface to implement.</typeparam>
-    public abstract class MockDataSourceBase<T> where T : class
+    public interface IMockDataSource<T> where T : class
     {
-        /// <summary>
-        /// Constructs a container for the mocking data source proxy implementation.
-        /// </summary>
-        /// <param name="proxy">The data source driver proxy implementation.</param>
-        public MockDataSourceBase(T proxy)
-        {
-            DataSourceDriverProxy = proxy;
-        }
-
-        /// <summary>
-        /// Provides a function to generate an actual instance of the data source driver interface.
-        /// </summary>
-        internal Func<Task<T>>? NewDataSourceDriverAsync { get; set; }
-
         /// <summary>
         /// The data source driver implementation.
         /// </summary>
-        internal T DataSourceDriverProxy { get; }
+        public T DataSourceDriverProxy { get; }
 
+    }
+
+    /// <summary>
+    /// A factory interface to generate new instances of the mock data source.
+    /// </summary>
+    /// <typeparam name="T">The data source driver interface to implement.</typeparam>
+    public interface IMockDataSourceFactory<T> where T : class
+    {
+        /// <summary>
+        /// Creates a new instance of the mock data source.
+        /// </summary>
+        /// <param name="newDataSourceDriverAsync">The function that will provide an actual data source driver interface.</param>
+        /// <returns></returns>
+        public IMockDataSource<T> NewInstance(Func<Task<T>> newDataSourceDriverAsync);
     }
 }

@@ -253,8 +253,8 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Spark
             TIMESTAMP_WITH_TIMEZONE = 2014,
         }
 
-        internal SparkConnection(IReadOnlyDictionary<string, string>? properties, MockDataSourceBase<TCLIService.IAsync>? proxy = default)
-            : base(properties, proxy)
+        internal SparkConnection(IReadOnlyDictionary<string, string>? properties, IMockDataSourceFactory<TCLIService.IAsync>? mockFactory = default)
+            : base(properties, mockFactory)
         {
             _productVersion = new Lazy<string>(() => GetProductVersion(), LazyThreadSafetyMode.PublicationOnly);
         }

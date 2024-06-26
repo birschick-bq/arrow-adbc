@@ -28,13 +28,13 @@ namespace Apache.Arrow.Adbc.Mocking
         /// <summary>
         /// Constructs an new <see cref="MockingConnection{T}"/> given an optional mocking data source implementation <c>mock</c>.
         /// </summary>
-        /// <param name="mock">The mocking data source implementation.</param>
-        protected MockingConnection(MockDataSourceBase<T>? mock)
+        /// <param name="mockFactory">The mocking data source implementation.</param>
+        protected MockingConnection(IMockDataSourceFactory<T>? mockFactory)
         {
-            if (mock == null) return;
+            if (mockFactory == null) return;
 
-            DataSourceDriverProxy = mock.DataSourceDriverProxy;
-            mock.NewDataSourceDriverAsync = NewDataSourceDriverAsync;
+            DataSourceDriverProxy = mockFactory.NewInstance(NewDataSourceDriverAsync)
+                .DataSourceDriverProxy;
         }
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace Apache.Arrow.Adbc.Mocking
 
         /// <summary>
         /// Provides a way to create a new instance of the data source's connected implementation.
-        /// Mocking servers can use this, for example, to record an integration scenario for later playback.
+        /// The mock data source can use this, for example, to record an integration scenario for later playback.
         /// </summary>
         /// <returns></returns>
         internal abstract Task<T> NewDataSourceDriverAsync();
