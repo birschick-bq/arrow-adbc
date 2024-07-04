@@ -16,6 +16,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Apache.Arrow.Adbc.Mocking
@@ -44,6 +45,6 @@ namespace Apache.Arrow.Adbc.Mocking
         /// </summary>
         /// <param name="newDataSourceDriverAsync">The function that will provide an actual data source driver interface.</param>
         /// <returns></returns>
-        public IMockDataSource<T> NewInstance(Func<Task<T>> newDataSourceDriverAsync);
+        public IMockDataSource<T> NewInstance(IReadOnlyDictionary<string, string>? properties, Func<Task<T>> newDataSourceDriverAsync);
     }
 }

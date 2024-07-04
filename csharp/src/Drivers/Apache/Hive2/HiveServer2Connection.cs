@@ -39,7 +39,8 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
         private readonly Lazy<string> _vendorVersion;
         private readonly Lazy<string> _vendorName;
 
-        internal HiveServer2Connection(IReadOnlyDictionary<string, string>? properties, IMockDataSourceFactory<TCLIService.IAsync>? mockFactory = default) : base(mockFactory)
+        internal HiveServer2Connection(IReadOnlyDictionary<string, string>? properties, IMockDataSourceFactory<TCLIService.IAsync>? mockFactory = default)
+            : base(properties, mockFactory)
         {
             this.properties = properties ?? new Dictionary<string, string>();
             // Note: "LazyThreadSafetyMode.PublicationOnly" is thread-safe initialization where

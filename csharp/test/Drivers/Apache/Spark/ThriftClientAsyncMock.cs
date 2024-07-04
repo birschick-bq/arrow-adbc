@@ -29,18 +29,20 @@ namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Spark
     {
         private readonly Lazy<Task<TCLIService.IAsync>> _client;
         private readonly Dictionary<TBase, TBase> _cache = [];
+        private readonly ReplayableMockConfiguration _replayableMockConfiguration;
 
         internal class ThriftClientAsyncMockFactory : IMockDataSourceFactory<TCLIService.IAsync>
         {
-            public IMockDataSource<TCLIService.IAsync> NewInstance(Func<Task<TCLIService.IAsync>> newDataSourceDriverAsync)
+            public IMockDataSource<TCLIService.IAsync> NewInstance(IReadOnlyDictionary<string, string>? properties, Func<Task<TCLIService.IAsync>> newDataSourceDriverAsync)
             {
-                return new ThriftClientAsyncMock(new Lazy<Task<TCLIService.IAsync>>(newDataSourceDriverAsync));
+                return new ThriftClientAsyncMock(properties, new Lazy<Task<TCLIService.IAsync>>(newDataSourceDriverAsync));
             }
         }
 
-        private ThriftClientAsyncMock(Lazy<Task<TCLIService.IAsync>> client)
+        private ThriftClientAsyncMock(IReadOnlyDictionary<string, string>? properties, Lazy<Task<TCLIService.IAsync>> client)
         {
             _client = client;
+            _replayableMockConfiguration = new ReplayableMockConfiguration(properties);
         }
 
         public TCLIService.IAsync DataSourceDriverProxy => this;
@@ -85,61 +87,58 @@ namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Spark
 
         public async Task<TGetTableTypesResp> GetTableTypes(TGetTableTypesReq req, CancellationToken cancellationToken = default)
         {
-            return await GetCachedOrLive(req, (await _client.Value).GetTableTypes, cancellationToken);
+            return _replayableMockConfiguration.RecordMode == ReplayableMockConfiguration.Mode.None
+                ? await Task.FromResult(GetMockTableTypesResponse())
+                : await GetCachedOrLive(req, (await _client.Value).GetTableTypes, cancellationToken);
+        }
 
-            //if (_cache.ContainsKey(req) && _cache[req] is TGetTableTypesResp cachedResp) return cachedResp;
-
-            //TCLIService.IAsync client = await _client.Value;
-            //TGetTableTypesResp actualResp = await client.GetTableTypes(req, cancellationToken);
-            //_cache[req] = actualResp;
-            //return actualResp;
-
-            //TStatus status = new(TStatusCode.SUCCESS_STATUS);
-            //StringArray.Builder stringBuilder = new();
-            //stringBuilder.Append("TABLE");
-            //stringBuilder.Append("VIEW");
-            //TStringColumn stringColumn = new(stringBuilder.Build());
-            //TTypeDesc stringTypeDesc = new()
-            //{
-            //    Types = [new TTypeEntry() { PrimitiveEntry = new TPrimitiveTypeEntry(TTypeId.STRING_TYPE) }]
-            //};
-            //TGetTableTypesResp resp = new(status)
-            //{
-            //    DirectResults = new()
-            //    {
-            //        ResultSet = new(status)
-            //        {
-            //            ResultSetMetadata = new(status)
-            //            {
-            //                Schema = new()
-            //                {
-            //                    Columns = [new TColumnDesc("table_type", stringTypeDesc, 0)],
-            //                },
-            //            },
-            //            Results = new()
-            //            {
-            //                ColumnCount = 1,
-            //                Columns = [new TColumn() { StringVal = stringColumn }],
-            //            },
-            //        },
-            //    },
-            //};
-
-            //return resp;
+        private static TGetTableTypesResp GetMockTableTypesResponse()
+        {
+            TStatus status = new(TStatusCode.SUCCESS_STATUS);
+            StringArray.Builder stringBuilder = new();
+            stringBuilder.Append("TABLE");
+            stringBuilder.Append("VIEW");
+            TStringColumn stringColumn = new(stringBuilder.Build());
+            TTypeDesc stringTypeDesc = new()
+            {
+                Types = [new TTypeEntry() { PrimitiveEntry = new TPrimitiveTypeEntry(TTypeId.STRING_TYPE) }]
+            };
+            TGetTableTypesResp resp = new(status)
+            {
+                DirectResults = new()
+                {
+                    ResultSet = new(status)
+                    {
+                        ResultSetMetadata = new(status)
+                        {
+                            Schema = new()
+                            {
+                                Columns = [new TColumnDesc("table_type", stringTypeDesc, 0)],
+                            },
+                        },
+                        Results = new()
+                        {
+                            ColumnCount = 1,
+                            Columns = [new TColumn() { StringVal = stringColumn }],
+                        },
+                    },
+                },
+            };
+            return resp;
         }
 
         public Task<TGetTypeInfoResp> GetTypeInfo(TGetTypeInfoReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
         public async Task<TOpenSessionResp> OpenSession(TOpenSessionReq req, CancellationToken cancellationToken = default)
         {
-            return await GetCachedOrLive(req, (await _client.Value).OpenSession, cancellationToken);
-
-            //return new TOpenSessionResp()
-            //{
-            //    Status = new TStatus(TStatusCode.SUCCESS_STATUS),
-            //    ServerProtocolVersion = req.Client_protocol,
-            //    SessionHandle = new TSessionHandle(new THandleIdentifier(Guid.NewGuid().ToByteArray(), Guid.NewGuid().ToByteArray())),
-            //};
+            return _replayableMockConfiguration.RecordMode == ReplayableMockConfiguration.Mode.None
+                ? await Task.FromResult(new TOpenSessionResp()
+                {
+                    Status = new TStatus(TStatusCode.SUCCESS_STATUS),
+                    ServerProtocolVersion = req.Client_protocol,
+                    SessionHandle = new TSessionHandle(new THandleIdentifier(Guid.NewGuid().ToByteArray(), Guid.NewGuid().ToByteArray())),
+                })
+                : await GetCachedOrLive(req, (await _client.Value).OpenSession, cancellationToken);
         }
 
         public Task<TRenewDelegationTokenResp> RenewDelegationToken(TRenewDelegationTokenReq req, CancellationToken cancellationToken = default) => throw new NotImplementedException();

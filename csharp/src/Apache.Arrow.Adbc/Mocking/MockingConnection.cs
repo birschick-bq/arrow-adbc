@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Apache.Arrow.Adbc.Mocking
@@ -25,15 +26,20 @@ namespace Apache.Arrow.Adbc.Mocking
     /// <typeparam name="T">An data source interface the mock will implement to mimick the data source driver functionality.</typeparam>
     internal abstract class MockingConnection<T> : AdbcConnection where T : class
     {
+        internal const string MockTestingMode = "adbc.test.mock.mode";
+        internal const string MockTestingModeRecord = "record";
+        internal const string MockTestingModeReplay = "replay";
+        internal const string MockTestingModeAutoRecord = "auto_record";
+
         /// <summary>
         /// Constructs an new <see cref="MockingConnection{T}"/> given an optional mocking data source implementation <c>mock</c>.
         /// </summary>
         /// <param name="mockFactory">The mocking data source implementation.</param>
-        protected MockingConnection(IMockDataSourceFactory<T>? mockFactory)
+        protected MockingConnection(IReadOnlyDictionary<string, string>? properties, IMockDataSourceFactory<T>? mockFactory)
         {
             if (mockFactory == null) return;
 
-            DataSourceDriverProxy = mockFactory.NewInstance(NewDataSourceDriverAsync)
+            DataSourceDriverProxy = mockFactory.NewInstance(properties, NewDataSourceDriverAsync)
                 .DataSourceDriverProxy;
         }
 
