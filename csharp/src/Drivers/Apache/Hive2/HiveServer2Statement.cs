@@ -22,7 +22,7 @@ using Apache.Hive.Service.Rpc.Thrift;
 
 namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
 {
-    public abstract class HiveServer2Statement : AdbcStatement
+    internal abstract class HiveServer2Statement : AdbcStatement
     {
         private const int PollTimeMillisecondsDefault = 500;
         private const int BatchSizeDefault = 50000;

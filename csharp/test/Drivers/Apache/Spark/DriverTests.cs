@@ -20,9 +20,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Apache.Arrow.Adbc.Mocking;
 using Apache.Arrow.Adbc.Tests.Metadata;
 using Apache.Arrow.Adbc.Tests.Xunit;
 using Apache.Arrow.Ipc;
+using Apache.Hive.Service.Rpc.Thrift;
 using Xunit;
 using Xunit.Abstractions;
 using ColumnTypeId = Apache.Arrow.Adbc.Drivers.Apache.Spark.SparkConnection.ColumnTypeId;
@@ -76,6 +78,7 @@ namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Spark
         public DriverTests(ITestOutputHelper? outputHelper) : base(outputHelper)
         {
             Skip.IfNot(Utils.CanExecuteTestConfig(TestConfigVariable));
+
         }
 
         /// <summary>
@@ -466,11 +469,13 @@ namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Spark
 
         /// <summary>
         /// Validates if the driver can call GetTableTypes.
+        /// Note: Uses the mocking data source data generator to test connected and non-connected
         /// </summary>
-        [SkippableFact, Order(9)]
-        public async Task CanGetTableTypes()
+        [SkippableTheory, Order(9)]
+        [MemberData(nameof(MockDataSourceData))]
+        public async Task CanGetTableTypes(IMockDataSourceFactory<TCLIService.IAsync>? mockFactory, IReadOnlyDictionary<string, string>? connectionOptions)
         {
-            AdbcConnection adbcConnection = NewConnection();
+            AdbcConnection adbcConnection = NewConnection(connectionOptions: connectionOptions, mockFactory: mockFactory);
 
             using IArrowArrayStream arrowArrayStream = adbcConnection.GetTableTypes();
 
@@ -478,10 +483,7 @@ namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Spark
 
             StringArray stringArray = (StringArray)recordBatch.Column("table_type");
 
-            List<string> known_types = new List<string>
-            {
-                "TABLE", "VIEW"
-            };
+            List<string> known_types = ["TABLE", "VIEW"];
 
             int results = 0;
 
@@ -546,6 +548,42 @@ namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Spark
             UpdateResult updateResult = await statement.ExecuteUpdateAsync();
 
             Assert.Equal(1, updateResult.AffectedRows);
+        }
+
+        public static IEnumerable<object?[]> MockDataSourceData()
+        {
+            // Returns no mocking implementation
+            yield return new object?[] { null, null };
+            // Returns a mocking implementation, default mode (auto_record)
+            yield return new object?[] { new ThriftClientAsyncMock.ThriftClientAsyncMockFactory(), null };
+            // Returns a mocking implementation to auto_record
+            yield return new object?[]
+            { new ThriftClientAsyncMock.ThriftClientAsyncMockFactory(), new Dictionary<string, string>
+                {
+                    [ReplayableMockConfiguration.ReplayableMockConstants.Mode] = ReplayableMockConfiguration.ReplayableMockConstants.AutoRecordMode
+                }
+            };
+            // Returns a mocking implementation to record
+            yield return new object?[]
+            { new ThriftClientAsyncMock.ThriftClientAsyncMockFactory(), new Dictionary<string, string>
+                {
+                    [ReplayableMockConfiguration.ReplayableMockConstants.Mode] = ReplayableMockConfiguration.ReplayableMockConstants.RecordMode
+                }
+            };
+            // Returns a mocking implementation to replay
+            yield return new object?[]
+            { new ThriftClientAsyncMock.ThriftClientAsyncMockFactory(), new Dictionary<string, string>
+                {
+                    [ReplayableMockConfiguration.ReplayableMockConstants.Mode] = ReplayableMockConfiguration.ReplayableMockConstants.ReplayMode
+                }
+            };
+            // Returns a mocking implementation to none (i.e., internal)
+            yield return new object?[]
+            { new ThriftClientAsyncMock.ThriftClientAsyncMockFactory(), new Dictionary<string, string>
+                {
+                    [ReplayableMockConfiguration.ReplayableMockConstants.Mode] = ReplayableMockConfiguration.ReplayableMockConstants.NoneMode
+                }
+            };
         }
 
         public static IEnumerable<object[]> CatalogNamePatternData()
