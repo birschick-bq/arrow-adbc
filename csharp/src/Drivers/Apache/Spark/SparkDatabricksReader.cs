@@ -19,12 +19,13 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Apache.Arrow.Adbc.Drivers.Apache.Hive2;
+using Apache.Arrow.Adbc.Tracing;
 using Apache.Arrow.Ipc;
 using Apache.Hive.Service.Rpc.Thrift;
 
 namespace Apache.Arrow.Adbc.Drivers.Apache.Spark
 {
-    internal sealed class SparkDatabricksReader : IArrowArrayStream
+    internal sealed class SparkDatabricksReader : TracingArrowArrayStream
     {
         HiveServer2Statement? statement;
         Schema schema;
@@ -32,15 +33,16 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Spark
         int index;
         IArrowReader? reader;
 
-        public SparkDatabricksReader(HiveServer2Statement statement, Schema schema)
+        public SparkDatabricksReader(HiveServer2Statement statement, Schema schema, string? traceParent)
         {
             this.statement = statement;
             this.schema = schema;
+            this.TraceParent = traceParent;
         }
 
-        public Schema Schema { get { return schema; } }
+        public override Schema Schema { get { return schema; } }
 
-        public async ValueTask<RecordBatch?> ReadNextRecordBatchAsync(CancellationToken cancellationToken = default)
+        public override async ValueTask<RecordBatch?> ReadNextRecordBatchAsync(CancellationToken cancellationToken = default)
         {
             while (true)
             {
@@ -77,10 +79,6 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Spark
                     this.statement = null;
                 }
             }
-        }
-
-        public void Dispose()
-        {
         }
     }
 }

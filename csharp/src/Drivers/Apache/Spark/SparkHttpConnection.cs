@@ -40,7 +40,8 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Spark
         private const string BasicAuthenticationScheme = "Basic";
         private const string BearerAuthenticationScheme = "Bearer";
 
-        public SparkHttpConnection(IReadOnlyDictionary<string, string> properties) : base(properties)
+        public SparkHttpConnection(IReadOnlyDictionary<string, string> properties, string? traceParent)
+            : base(properties, traceParent)
         {
         }
 
@@ -129,7 +130,8 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Spark
             }
         }
 
-        internal override IArrowArrayStream NewReader<T>(T statement, Schema schema) => new HiveServer2Reader(statement, schema, dataTypeConversion: statement.Connection.DataTypeConversion);
+        internal override IArrowArrayStream NewReader<T>(T statement, Schema schema, string? traceParent) =>
+            new HiveServer2Reader(statement, schema, dataTypeConversion: statement.Connection.DataTypeConversion, traceParent);
 
         protected override TTransport CreateTransport()
         {

@@ -23,14 +23,15 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Impala
     {
         readonly IReadOnlyDictionary<string, string> properties;
 
-        internal ImpalaDatabase(IReadOnlyDictionary<string, string> properties)
+        internal ImpalaDatabase(IReadOnlyDictionary<string, string> properties, string? traceParent)
         {
             this.properties = properties;
+            TraceParent = traceParent;
         }
 
         public override AdbcConnection Connect(IReadOnlyDictionary<string, string>? properties)
         {
-            ImpalaConnection connection = new ImpalaConnection(this.properties);
+            ImpalaConnection connection = new ImpalaConnection(this.properties, TraceParent);
             connection.OpenAsync().Wait();
             return connection;
         }

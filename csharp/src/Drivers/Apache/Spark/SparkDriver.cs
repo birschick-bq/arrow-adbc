@@ -23,7 +23,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Spark
     {
         public override AdbcDatabase Open(IReadOnlyDictionary<string, string> parameters)
         {
-            return new SparkDatabase(parameters);
+            return new SparkDatabase(parameters, TraceParent);
         }
     }
 }

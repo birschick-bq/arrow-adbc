@@ -22,16 +22,16 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Spark
 {
     internal class SparkConnectionFactory
     {
-        public static SparkConnection NewConnection(IReadOnlyDictionary<string, string> properties)
+        public static SparkConnection NewConnection(IReadOnlyDictionary<string, string> properties, string? traceParent)
         {
             bool _ = properties.TryGetValue(SparkParameters.Type, out string? type) && string.IsNullOrEmpty(type);
             bool __ = ServerTypeParser.TryParse(type, out SparkServerType serverTypeValue);
             return serverTypeValue switch
             {
-                SparkServerType.Databricks => new SparkDatabricksConnection(properties),
-                SparkServerType.Http => new SparkHttpConnection(properties),
+                SparkServerType.Databricks => new SparkDatabricksConnection(properties, traceParent),
+                SparkServerType.Http => new SparkHttpConnection(properties, traceParent),
                 // TODO: Re-enable when properly supported
-                //SparkServerType.Standard => new SparkStandardConnection(properties),
+                //SparkServerType.Standard => new SparkStandardConnection(properties, traceParent),
                 SparkServerType.Empty => throw new ArgumentException($"Required property '{SparkParameters.Type}' is missing. Supported types: {ServerTypeParser.SupportedList}", nameof(properties)),
                 _ => throw new ArgumentOutOfRangeException(nameof(properties), $"Unsupported or unknown value '{type}' given for property '{SparkParameters.Type}'. Supported types: {ServerTypeParser.SupportedList}"),
             };

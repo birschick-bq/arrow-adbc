@@ -28,7 +28,8 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Spark
 {
     internal class SparkStandardConnection : SparkHttpConnection
     {
-        public SparkStandardConnection(IReadOnlyDictionary<string, string> properties) : base(properties)
+        public SparkStandardConnection(IReadOnlyDictionary<string, string> properties, string? traceParent)
+            : base(properties, traceParent)
         {
         }
 

@@ -21,13 +21,14 @@ using System.Linq;
 
 namespace Apache.Arrow.Adbc.Drivers.Apache.Spark
 {
-    public class SparkDatabase : AdbcDatabase
+    internal class SparkDatabase : AdbcDatabase
     {
         readonly IReadOnlyDictionary<string, string> properties;
 
-        public SparkDatabase(IReadOnlyDictionary<string, string> properties)
+        public SparkDatabase(IReadOnlyDictionary<string, string> properties, string? traceParent)
         {
             this.properties = properties;
+            this.TraceParent = traceParent;
         }
 
         public override AdbcConnection Connect(IReadOnlyDictionary<string, string>? options)
@@ -38,7 +39,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Spark
                 : options
                     .Concat(properties.Where(x => !options.Keys.Contains(x.Key, StringComparer.OrdinalIgnoreCase)))
                     .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-            SparkConnection connection = SparkConnectionFactory.NewConnection(mergedProperties); // new SparkConnection(mergedProperties);
+            SparkConnection connection = SparkConnectionFactory.NewConnection(mergedProperties, TraceParent);
             connection.OpenAsync().Wait();
             return connection;
         }

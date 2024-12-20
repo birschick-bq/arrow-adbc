@@ -25,11 +25,13 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Spark
 {
     internal class SparkDatabricksConnection : SparkHttpConnection
     {
-        public SparkDatabricksConnection(IReadOnlyDictionary<string, string> properties) : base(properties)
+        public SparkDatabricksConnection(IReadOnlyDictionary<string, string> properties, string? traceParent)
+            : base(properties, traceParent)
         {
         }
 
-        internal override IArrowArrayStream NewReader<T>(T statement, Schema schema) => new SparkDatabricksReader(statement, schema);
+        internal override IArrowArrayStream NewReader<T>(T statement, Schema schema, string? traceParent) =>
+            new SparkDatabricksReader(statement, schema, traceParent);
 
         internal override SchemaParser SchemaParser => new SparkDatabricksSchemaParser();
 

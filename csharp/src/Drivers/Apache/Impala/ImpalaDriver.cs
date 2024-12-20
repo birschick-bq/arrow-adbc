@@ -23,7 +23,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Impala
     {
         public override AdbcDatabase Open(IReadOnlyDictionary<string, string> parameters)
         {
-            return new ImpalaDatabase(parameters);
+            return new ImpalaDatabase(parameters, TraceParent);
         }
     }
 }

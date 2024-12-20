@@ -22,14 +22,14 @@ using System.Data.SqlTypes;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
-using Apache.Arrow.Ipc;
+using Apache.Arrow.Adbc.Tracing;
 using Apache.Arrow.Types;
 using Apache.Hive.Service.Rpc.Thrift;
 using Thrift.Transport;
 
 namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
 {
-    internal class HiveServer2Reader : IArrowArrayStream
+    internal class HiveServer2Reader : TracingArrowArrayStream
     {
         private const byte AsciiZero = (byte)'0';
         private const int AsciiDigitMaxIndex = '9' - AsciiZero;
@@ -73,16 +73,18 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
         public HiveServer2Reader(
             HiveServer2Statement statement,
             Schema schema,
-            DataTypeConversion dataTypeConversion)
+            DataTypeConversion dataTypeConversion,
+            string? traceParent)
         {
             _statement = statement;
             Schema = schema;
             _dataTypeConversion = dataTypeConversion;
+            TraceParent = traceParent;
         }
 
-        public Schema Schema { get; }
+        public override Schema Schema { get; }
 
-        public async ValueTask<RecordBatch?> ReadNextRecordBatchAsync(CancellationToken cancellationToken = default)
+        public override async ValueTask<RecordBatch?> ReadNextRecordBatchAsync(CancellationToken cancellationToken = default)
         {
             // All records have been exhausted
             if (_statement == null)
@@ -142,10 +144,6 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
         {
             var request = new TFetchResultsReq(statement.OperationHandle, TFetchOrientation.FETCH_NEXT, statement.BatchSize);
             return await statement.Connection.Client.FetchResults(request, cancellationToken);
-        }
-
-        public void Dispose()
-        {
         }
 
         private static IArrowArray GetArray(TColumn column, IArrowType? expectedArrowType = default)

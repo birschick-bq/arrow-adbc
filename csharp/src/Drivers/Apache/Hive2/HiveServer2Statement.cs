@@ -84,7 +84,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
             await HiveServer2Connection.PollForResponseAsync(OperationHandle!, Connection.Client, PollTimeMilliseconds, cancellationToken); // + poll, up to QueryTimeout
             Schema schema = await GetResultSetSchemaAsync(OperationHandle!, Connection.Client, cancellationToken); // + get the result, up to QueryTimeout
 
-            return new QueryResult(-1, Connection.NewReader(this, schema));
+            return new QueryResult(-1, Connection.NewReader(this, schema, TraceParent));
         }
 
         public override async ValueTask<QueryResult> ExecuteQueryAsync()

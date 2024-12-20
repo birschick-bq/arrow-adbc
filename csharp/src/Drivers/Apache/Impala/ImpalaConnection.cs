@@ -35,8 +35,8 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Impala
         private const int DefaultSocketTransportPort = 21050;
         private const int DefaultHttpTransportPort = 28000;
 
-        internal ImpalaConnection(IReadOnlyDictionary<string, string> properties)
-            : base(properties)
+        internal ImpalaConnection(IReadOnlyDictionary<string, string> properties, string? traceParent)
+            : base(properties, traceParent)
         {
         }
 
@@ -87,6 +87,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Impala
 
         internal override SchemaParser SchemaParser { get; } = new HiveServer2SchemaParser();
 
-        internal override IArrowArrayStream NewReader<T>(T statement, Schema schema) => new HiveServer2Reader(statement, schema, dataTypeConversion: DataTypeConversion);
+        internal override IArrowArrayStream NewReader<T>(T statement, Schema schema, string? traceParent) =>
+            new HiveServer2Reader(statement, schema, dataTypeConversion: DataTypeConversion, traceParent);
     }
 }
