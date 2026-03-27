@@ -20,7 +20,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -32,9 +31,6 @@ namespace Apache.Arrow.Adbc.Telemetry.Traces.Listeners.FileListener
         private static readonly byte[] s_newLine = Encoding.UTF8.GetBytes(Environment.NewLine);
         private static readonly JsonSerializerOptions s_serializerOptions = new()
         {
-            TypeInfoResolver = JsonTypeInfoResolver.Combine(
-                SerializableActivitySerializerContext.Default,
-                new DefaultJsonTypeInfoResolver()),
             Converters =             {
                 // Unredacts any redacted values in the trace when serializing to JSON, so that the full value is available in the file. This is needed since the file exporter is opt-in and users would expect to see the full value in the file.
                 new UnredactConverter(),
@@ -102,9 +98,7 @@ namespace Apache.Arrow.Adbc.Telemetry.Traces.Listeners.FileListener
                     SerializableActivity serializableActivity = new(activity);
                     await JsonSerializer.SerializeAsync(
                         stream,
-                        serializableActivity,
-                        s_serializerOptions,
-                        cancellationToken: cancellationToken).ConfigureAwait(false);
+                        serializableActivity, cancellationToken: cancellationToken).ConfigureAwait(false);
                     stream.Write(s_newLine, 0, s_newLine.Length);
                     stream.Position = 0;
 

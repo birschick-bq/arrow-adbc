@@ -92,101 +92,6 @@ namespace Apache.Arrow.Adbc.Tests.Telemetry.Traces.Listeners.FileListener
         }
 
         [Fact]
-        public async Task CannnotSerializeAnonymousObjectWithSerializerContext()
-        {
-            Activity activity = new("activity");
-            using (activity.Start())
-            {
-                activity.AddTag("key1", new { Field1 = "value1" });
-                SerializableActivity serializableActivity = new(activity);
-                var stream = new MemoryStream();
-                var serializerOptions = new JsonSerializerOptions
-                {
-                    WriteIndented = true,
-                    IncludeFields = true,
-                    TypeInfoResolver = SerializableActivitySerializerContext.Default,
-                };
-                await Assert.ThrowsAnyAsync<Exception>(async () => await JsonSerializer.SerializeAsync(
-                    stream,
-                    serializableActivity,
-                    serializerOptions));
-            }
-        }
-
-        [Theory]
-        [ClassData(typeof(SerializableActivityTestData))]
-        public async Task CanSerializeWithNoDefaultTypeInfoResolver(Activity activity)
-        {
-            using (activity.Start())
-            {
-                SerializableActivity serializableActivity = new(activity);
-                var stream = new MemoryStream();
-                var serializerOptions = new JsonSerializerOptions
-                {
-                    WriteIndented = true,
-                    IncludeFields = true,
-                    TypeInfoResolver = SerializableActivitySerializerContext.Default,
-                };
-                await JsonSerializer.SerializeAsync(
-                    stream,
-                    serializableActivity,
-                    serializerOptions);
-                Assert.NotNull(stream);
-                _output.WriteLine("Serialized Activity: {0}", Encoding.UTF8.GetString(stream.ToArray()));
-            }
-        }
-
-        [Theory]
-        [ClassData(typeof(SerializableActivityTestData))]
-        public async Task CanSerializeWithDefaultTypeInfoResolver(Activity activity)
-        {
-            using (activity.Start())
-            {
-                SerializableActivity serializableActivity = new(activity);
-                var stream = new MemoryStream();
-                var serializerOptions = new JsonSerializerOptions
-                {
-                    WriteIndented = true,
-                    IncludeFields = true,
-                    TypeInfoResolver = JsonTypeInfoResolver.Combine(
-                        SerializableActivitySerializerContext.Default,
-                        new DefaultJsonTypeInfoResolver()),
-                };
-                await JsonSerializer.SerializeAsync(
-                    stream,
-                    serializableActivity,
-                    serializerOptions);
-                Assert.NotNull(stream);
-                _output.WriteLine("Serialized Activity: {0}", Encoding.UTF8.GetString(stream.ToArray()));
-            }
-        }
-
-        [Fact]
-        public async Task CanSerializeAnonymousObjectWithDefaultTypeInfoResolver()
-        {
-            Activity activity = new("activity");
-            using (activity.Start())
-            {
-                activity.AddTag("key1", new { Field1 = "value1" });
-                SerializableActivity serializableActivity = new(activity);
-                var stream = new MemoryStream();
-                var serializerOptions = new JsonSerializerOptions
-                {
-                    WriteIndented = true,
-                    IncludeFields = true,
-                    TypeInfoResolver = JsonTypeInfoResolver.Combine(
-                        SerializableActivitySerializerContext.Default,
-                        new DefaultJsonTypeInfoResolver()),
-                };
-                await JsonSerializer.SerializeAsync(
-                    stream,
-                    serializableActivity,
-                    serializerOptions);
-                _output.WriteLine("Serialized Activity: {0}", Encoding.UTF8.GetString(stream.ToArray()));
-            }
-        }
-
-        [Fact]
         public async Task CanRedactValue()
         {
             string activityName = NewName();
@@ -202,16 +107,9 @@ namespace Apache.Arrow.Adbc.Tests.Telemetry.Traces.Listeners.FileListener
 
             SerializableActivity serializableActivity = new(activity);
             var stream = new MemoryStream();
-            JsonSerializerOptions serializerOptions = new()
-            {
-                TypeInfoResolver = JsonTypeInfoResolver.Combine(
-                    SerializableActivitySerializerContext.Default,
-                    new DefaultJsonTypeInfoResolver()),
-            };
             await JsonSerializer.SerializeAsync(
                 stream,
-                serializableActivity,
-                serializerOptions);
+                serializableActivity);
             Assert.NotNull(stream);
             string actualString = Encoding.UTF8.GetString(stream.ToArray());
             Assert.DoesNotContain(testValue, actualString);
@@ -237,9 +135,6 @@ namespace Apache.Arrow.Adbc.Tests.Telemetry.Traces.Listeners.FileListener
             var stream = new MemoryStream();
             JsonSerializerOptions serializerOptions = new()
             {
-                TypeInfoResolver = JsonTypeInfoResolver.Combine(
-                    SerializableActivitySerializerContext.Default,
-                    new DefaultJsonTypeInfoResolver()),
                 Converters =
                 {
                     new UnredactConverter()
