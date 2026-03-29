@@ -31,7 +31,6 @@ using Apache.Arrow.Adbc.Drivers.Apache.Hive2.Client;
 using Apache.Arrow.Adbc.Drivers.Apache.Spark;
 using Apache.Arrow.Adbc.Drivers.Databricks.Auth;
 using Apache.Arrow.Adbc.Drivers.Databricks.Reader;
-using Apache.Arrow.Adbc.Tracing;
 using Apache.Arrow.Ipc;
 using Apache.Hive.Service.Rpc.Thrift;
 using Thrift.Protocol;
@@ -766,7 +765,7 @@ namespace Apache.Arrow.Adbc.Drivers.Databricks
             return req;
         }
 
-        protected override async Task HandleOpenSessionResponse(TOpenSessionResp? session, ActivityWithPii? activity = default)
+        protected override async Task HandleOpenSessionResponse(TOpenSessionResp? session, Activity? activity = default)
         {
             await base.HandleOpenSessionResponse(session, activity);
             if (session != null)

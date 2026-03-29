@@ -26,7 +26,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Apache.Arrow.Adbc.Drivers.Apache.Hive2;
-using Apache.Arrow.Adbc.Tracing;
 using Apache.Arrow.Ipc;
 using Apache.Hive.Service.Rpc.Thrift;
 using Thrift;
@@ -133,7 +132,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Impala
 
         protected override TTransport CreateTransport()
         {
-            ActivityWithPii? activity = ActivityWithPii.Wrap(Activity.Current);
+            Activity? activity = Activity.Current;
 
             // Assumption: parameters have already been validated.
             Properties.TryGetValue(ImpalaParameters.HostName, out string? hostName);
@@ -160,11 +159,12 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Impala
             httpClient.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("identity"));
             httpClient.DefaultRequestHeaders.ExpectContinue = false;
 
-            activity?.AddTag(ActivityKeys.Encrypted, baseAddress.Scheme == Uri.UriSchemeHttps, isPii: false);
-            activity?.AddTag(ActivityKeys.TransportType, baseAddress.Scheme, isPii: false);
-            activity?.AddTag(ActivityKeys.AuthType, authTypeValue.ToString(), isPii: false);
-            activity?.AddTag(ActivityKeys.Http.UserAgent, s_userAgent, isPii: false);
-            activity?.AddTag(ActivityKeys.Http.Uri, baseAddress, isPii: true);
+            activity?.AddTag(ActivityKeys.Encrypted, baseAddress.Scheme == Uri.UriSchemeHttps);
+            activity?.AddTag(ActivityKeys.TransportType, baseAddress.Scheme);
+            activity?.AddTag(ActivityKeys.AuthType, authTypeValue.ToString());
+            activity?.AddTag(ActivityKeys.Http.UserAgent, s_userAgent);
+            activity?.AddTag(ActivityKeys.Http.Uri, baseAddress);
+
             TConfiguration config = GetTconfiguration();
             THttpTransport transport = new(httpClient, config)
             {
@@ -178,7 +178,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Impala
 
         private static AuthenticationHeaderValue? GetAuthenticationHeaderValue(ImpalaAuthType authType, string? username, string? password)
         {
-            ActivityWithPii? activity = ActivityWithPii.Wrap(Activity.Current);
+            Activity? activity = Activity.Current;
 
             if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password) && (authType == ImpalaAuthType.Empty || authType == ImpalaAuthType.Basic))
             {

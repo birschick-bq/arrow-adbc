@@ -20,7 +20,6 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Apache.Arrow.Adbc.Tracing;
 
 namespace Apache.Arrow.Adbc.Drivers.BigQuery
 {
@@ -32,7 +31,7 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
         public static async Task<T> ExecuteWithRetriesAsync<T>(
             ITokenProtectedResource tokenProtectedResource,
             Func<Task<T>> action,
-            ActivityWithPii? activity,
+            Activity? activity,
             int maxRetries = 5,
             int initialDelayMilliseconds = 200,
             CancellationToken cancellationToken = default)
@@ -56,7 +55,7 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
                 {
                     // Note: OperationCanceledException could be thrown from the call,
                     // but we only want to break out when the cancellation was requested from the caller.
-                    activity?.AddBigQueryTag("retry_attempt", retryCount, isPii: false);
+                    activity?.AddBigQueryTag("retry_attempt", retryCount);
                     activity?.AddException(ex);
 
                     retryCount++;
@@ -66,7 +65,7 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
                         {
                             if (tokenProtectedResource?.TokenRequiresUpdate(ex) == true)
                             {
-                                activity?.AddBigQueryTag("update_token.status", "Expired", isPii: false);
+                                activity?.AddBigQueryTag("update_token.status", "Expired");
                                 throw new AdbcException($"Cannot update access token after {maxRetries} tries. Last exception: {ex.GetType().Name}: {ex.Message}", AdbcStatusCode.Unauthenticated, ex);
                             }
                         }
@@ -78,9 +77,9 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
                     {
                         if (tokenProtectedResource.TokenRequiresUpdate(ex) == true)
                         {
-                            activity?.AddBigQueryTag("update_token.status", "Required", isPii: false);
+                            activity?.AddBigQueryTag("update_token.status", "Required");
                             await tokenProtectedResource.UpdateToken();
-                            activity?.AddBigQueryTag("update_token.status", "Completed", isPii: false);
+                            activity?.AddBigQueryTag("update_token.status", "Completed");
                         }
                     }
 

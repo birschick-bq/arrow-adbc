@@ -26,7 +26,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Apache.Arrow.Adbc.Drivers.Apache.Hive2;
-using Apache.Arrow.Adbc.Tracing;
 using Apache.Arrow.Ipc;
 using Apache.Hive.Service.Rpc.Thrift;
 using Thrift;
@@ -163,7 +162,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Spark
 
         protected override TTransport CreateTransport()
         {
-            ActivityWithPii? activity = ActivityWithPii.Wrap(Activity.Current);
+            Activity? activity = Activity.Current;
 
             // Assumption: parameters have already been validated.
             Properties.TryGetValue(SparkParameters.HostName, out string? hostName);
@@ -188,11 +187,12 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Spark
             httpClient.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("identity"));
             httpClient.DefaultRequestHeaders.ExpectContinue = false;
 
-            activity?.AddTag(ActivityKeys.Encrypted, baseAddress.Scheme == Uri.UriSchemeHttps, isPii: false);
-            activity?.AddTag(ActivityKeys.TransportType, baseAddress.Scheme, isPii: false);
-            activity?.AddTag(ActivityKeys.AuthType, authTypeValue.ToString(), isPii: false);
-            activity?.AddTag(ActivityKeys.Http.UserAgent, userAgent, isPii: false);
-            activity?.AddTag(ActivityKeys.Http.Uri, baseAddress, isPii: true);
+            activity?.AddTag(ActivityKeys.Encrypted, baseAddress.Scheme == Uri.UriSchemeHttps);
+            activity?.AddTag(ActivityKeys.TransportType, baseAddress.Scheme);
+            activity?.AddTag(ActivityKeys.AuthType, authTypeValue.ToString());
+            activity?.AddTag(ActivityKeys.Http.UserAgent, userAgent);
+            activity?.AddTag(ActivityKeys.Http.Uri, baseAddress);
+
             TConfiguration config = GetTconfiguration();
             THttpTransport transport = new(httpClient, config)
             {
@@ -206,7 +206,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Spark
 
         protected virtual AuthenticationHeaderValue? GetAuthenticationHeaderValue(SparkAuthType authType)
         {
-            ActivityWithPii? activity = ActivityWithPii.Wrap(Activity.Current);
+            Activity? activity = Activity.Current;
 
             Properties.TryGetValue(SparkParameters.Token, out string? token);
             Properties.TryGetValue(SparkParameters.AccessToken, out string? access_token);
@@ -214,27 +214,27 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Spark
             Properties.TryGetValue(AdbcOptions.Password, out string? password);
             if (!string.IsNullOrEmpty(token) && (authType == SparkAuthType.Empty || authType == SparkAuthType.Token))
             {
-                activity?.AddTag(ActivityKeys.Http.AuthScheme, BearerAuthenticationScheme, isPii: false);
+                activity?.AddTag(ActivityKeys.Http.AuthScheme, BearerAuthenticationScheme);
                 return new AuthenticationHeaderValue(BearerAuthenticationScheme, token);
             }
             else if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password) && (authType == SparkAuthType.Empty || authType == SparkAuthType.Basic))
             {
-                activity?.AddTag(ActivityKeys.Http.AuthScheme, BasicAuthenticationScheme, isPii: false);
+                activity?.AddTag(ActivityKeys.Http.AuthScheme, BasicAuthenticationScheme);
                 return new AuthenticationHeaderValue(BasicAuthenticationScheme, Convert.ToBase64String(Encoding.UTF8.GetBytes($"{username}:{password}")));
             }
             else if (!string.IsNullOrEmpty(username) && (authType == SparkAuthType.Empty || authType == SparkAuthType.UsernameOnly))
             {
-                activity?.AddTag(ActivityKeys.Http.AuthScheme, BasicAuthenticationScheme, isPii: false);
+                activity?.AddTag(ActivityKeys.Http.AuthScheme, BasicAuthenticationScheme);
                 return new AuthenticationHeaderValue(BasicAuthenticationScheme, Convert.ToBase64String(Encoding.UTF8.GetBytes($"{username}:")));
             }
             else if (!string.IsNullOrEmpty(access_token) && authType == SparkAuthType.OAuth)
             {
-                activity?.AddTag(ActivityKeys.Http.AuthScheme, BearerAuthenticationScheme, isPii: false);
+                activity?.AddTag(ActivityKeys.Http.AuthScheme, BearerAuthenticationScheme);
                 return new AuthenticationHeaderValue(BearerAuthenticationScheme, access_token);
             }
             else if (authType == SparkAuthType.None)
             {
-                activity?.AddTag(ActivityKeys.Http.AuthScheme, AnonymousAuthenticationScheme, isPii: false);
+                activity?.AddTag(ActivityKeys.Http.AuthScheme, AnonymousAuthenticationScheme);
                 return null;
             }
             else

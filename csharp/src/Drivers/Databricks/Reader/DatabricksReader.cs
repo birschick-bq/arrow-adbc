@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Apache.Arrow.Adbc.Drivers.Apache.Hive2;
@@ -50,7 +51,8 @@ namespace Apache.Arrow.Adbc.Drivers.Databricks.Reader
 
         public override async ValueTask<RecordBatch?> ReadNextRecordBatchAsync(CancellationToken cancellationToken = default)
         {
-            return await this.TraceActivityAsync(async (ActivityWithPii? activity) =>
+#pragma warning disable CS0618 // Type or member is obsolete
+            return await this.TraceActivityAsync(async (Activity? activity) =>
             {
                 ThrowIfDisposed();
 
@@ -61,9 +63,7 @@ namespace Apache.Arrow.Adbc.Drivers.Databricks.Reader
                         RecordBatch? next = await this.reader.ReadNextRecordBatchAsync(cancellationToken);
                         if (next != null)
                         {
-                            activity?.AddEvent(
-                                SemanticConventions.Messaging.Batch.Response,
-                                [new(SemanticConventions.Db.Response.ReturnedRows, next.Length)], isPii:false);
+                            activity?.AddEvent(SemanticConventions.Messaging.Batch.Response, [new(SemanticConventions.Db.Response.ReturnedRows, next.Length)]);
                             return next;
                         }
                         this.reader = null;
@@ -97,12 +97,13 @@ namespace Apache.Arrow.Adbc.Drivers.Databricks.Reader
                     this.batches = response.Results.ArrowBatches;
                     for (int i = 0; i < this.batches.Count; i++)
                     {
-                        activity?.AddTag(SemanticConventions.Db.Response.ReturnedRows, this.batches[i].RowCount, isPii: false);
+                        activity?.AddTag(SemanticConventions.Db.Response.ReturnedRows, this.batches[i].RowCount);
                     }
 
                     this.hasNoMoreRows = !response.HasMoreRows;
                 }
             });
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         private void ProcessFetchedBatches()

@@ -23,7 +23,6 @@ using System.Net.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using Apache.Arrow.Adbc.Drivers.Apache.Hive2;
-using Apache.Arrow.Adbc.Tracing;
 using Apache.Arrow.Ipc;
 using Apache.Hive.Service.Rpc.Thrift;
 using Thrift;
@@ -104,7 +103,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Impala
 
         protected override TTransport CreateTransport()
         {
-            ActivityWithPii? activity = ActivityWithPii.Wrap(Activity.Current);
+            Activity? activity = Activity.Current;
 
             // Assumption: hostName and port have already been validated.
             Properties.TryGetValue(ImpalaParameters.HostName, out string? hostName);
@@ -130,12 +129,12 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Impala
                 {
                     transport = new TTlsSocketTransport(hostName!, int.Parse(port!), config: thriftConfig, 0, null, certValidator: certValidator);
                 }
-                activity?.AddTag(ActivityKeys.Encrypted, true, isPii: false);
+                activity?.AddTag(ActivityKeys.Encrypted, true);
             }
             else
             {
                 transport = new TSocketTransport(hostName!, int.Parse(port!), connectClient, config: thriftConfig);
-                activity?.AddTag(ActivityKeys.Encrypted, false, isPii: false);
+                activity?.AddTag(ActivityKeys.Encrypted, false);
             }
             activity?.AddTag(ActivityKeys.Host, hostName);
             activity?.AddTag(ActivityKeys.Port, port);
@@ -173,7 +172,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Impala
 
         protected override TOpenSessionReq CreateSessionRequest()
         {
-            ActivityWithPii? activity = ActivityWithPii.Wrap(Activity.Current);
+            Activity? activity = Activity.Current;
 
             // Assumption: user name and password have already been validated.
             Properties.TryGetValue(AdbcOptions.Username, out string? username);

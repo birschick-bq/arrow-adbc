@@ -124,6 +124,15 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
         }
 
         /// <summary>
+        /// Conditional used to determines if it is safe to trace
+        /// </summary>
+        /// <remarks>
+        /// It is safe to write to some output types (ie, files) but not others (ie, a shared resource).
+        /// </remarks>
+        /// <returns></returns>
+        internal bool IsSafeToTrace => _fileActivityListener != null;
+
+        /// <summary>
         /// The function to call when updating the token.
         /// </summary>
         public Func<Task>? UpdateToken { get; set; }
@@ -152,7 +161,8 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
         /// <exception cref="ArgumentException"></exception>
         internal BigQueryClient Open(string? projectId = null)
         {
-            return this.TraceActivity((ActivityWithPii? activity) =>
+#pragma warning disable CS0618 // Type or member is obsolete
+            return this.TraceActivity(activity =>
             {
                 string? billingProjectId = null;
                 TimeSpan? clientTimeout = null;
@@ -177,7 +187,7 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
                     if (projectId.Equals(BigQueryConstants.PublicProjectId, StringComparison.OrdinalIgnoreCase))
                     {
                         projectId = BigQueryConstants.DetectProjectId;
-                        activity?.AddBigQueryTag("change_public_projectId_to_detect_project_id", projectId, isPii: false);
+                        activity?.AddBigQueryTag("change_public_projectId_to_detect_project_id", projectId);
                     }
                 }
 
@@ -227,7 +237,7 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
                 }
                 else
                 {
-                    activity?.AddBigQueryTag("client.default_location", null, isPii: false);
+                    activity?.AddBigQueryTag("client.default_location", null);
                 }
 
                 BigQueryClient client = bigQueryClientBuilder.Build();
@@ -240,11 +250,13 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
                 Client = client;
                 return client;
             });
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         internal void SetCredential()
         {
-            this.TraceActivity((ActivityWithPii? activity) =>
+#pragma warning disable CS0618 // Type or member is obsolete
+            this.TraceActivity(activity =>
             {
                 string? clientId = null;
                 string? clientSecret = null;
@@ -314,13 +326,15 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
                     throw new ArgumentException($"{authenticationType} is not a valid authenticationType");
                 }
             });
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         public override void SetOption(string key, string value)
         {
-            this.TraceActivity((ActivityWithPii? activity) =>
+#pragma warning disable CS0618 // Type or member is obsolete
+            this.TraceActivity((Activity? activity) =>
             {
-                activity?.AddTag(key + ".set", value, isPii: true);
+                activity?.AddTag(key + ".set", value);
 
                 this.properties[key] = value;
 
@@ -329,6 +343,7 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
                     UpdateClientToken();
                 }
             });
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         /// <summary>
@@ -355,7 +370,8 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
 
         public override IArrowArrayStream GetInfo(IReadOnlyList<AdbcInfoCode> codes)
         {
-            return this.TraceActivity((ActivityWithPii? activity) =>
+#pragma warning disable CS0618 // Type or member is obsolete
+            return this.TraceActivity((Activity? activity) =>
             {
                 const int strValTypeID = 0;
 
@@ -444,7 +460,7 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
                             nullCount++;
                             break;
                     }
-                    activity?.AddTag(tagKey, tagValue, isPii: false);
+                    activity?.AddTag(tagKey, tagValue);
                 }
 
                 StructType entryType = new StructType(
@@ -477,6 +493,7 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
 
                 return new BigQueryInfoArrowStream(StandardSchemas.GetInfoSchema, dataArrays);
             });
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         public override IArrowArrayStream GetObjects(
@@ -487,13 +504,15 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
             IReadOnlyList<string>? tableTypes,
             string? columnNamePattern)
         {
-            return this.TraceActivity((ActivityWithPii? activity) =>
+#pragma warning disable CS0618 // Type or member is obsolete
+            return this.TraceActivity((Activity? activity) =>
             {
                 IArrowArray[] dataArrays = GetCatalogs(depth, catalogPattern, dbSchemaPattern,
                     tableNamePattern, tableTypes, columnNamePattern);
 
                 return new BigQueryInfoArrowStream(StandardSchemas.GetObjectsSchema, dataArrays);
             });
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         /// <summary>
@@ -510,7 +529,7 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
         /// </summary>
         public bool TokenRequiresUpdate(Exception ex) => BigQueryUtils.TokenRequiresUpdate(ex);
 
-        private async Task<T> ExecuteWithRetriesAsync<T>(Func<Task<T>> action, ActivityWithPii? activity) => await RetryManager.ExecuteWithRetriesAsync<T>(this, action, activity, MaxRetryAttempts, RetryDelayMs);
+        private async Task<T> ExecuteWithRetriesAsync<T>(Func<Task<T>> action, Activity? activity) => await RetryManager.ExecuteWithRetriesAsync<T>(this, action, activity, MaxRetryAttempts, RetryDelayMs);
 
         /// <summary>
         /// Executes the query using the BigQueryClient.
@@ -527,15 +546,17 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
         {
             if (Client == null) { Client = Open(); }
 
-            return this.TraceActivity((ActivityWithPii? activity) =>
+#pragma warning disable CS0618 // Type or member is obsolete
+            return this.TraceActivity(activity =>
             {
-                activity?.AddTag(SemanticConventions.Db.Query.Text, sql, isPii: true);
+                activity?.AddConditionalTag(SemanticConventions.Db.Query.Text, sql, IsSafeToTrace);
 
                 Func<Task<BigQueryResults?>> func = () => Client.ExecuteQueryAsync(sql, parameters ?? Enumerable.Empty<BigQueryParameter>(), queryOptions, resultsOptions);
                 BigQueryResults? result = ExecuteWithRetriesAsync<BigQueryResults?>(func, activity).GetAwaiter().GetResult();
 
                 return result;
             });
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         private IArrowArray[] GetCatalogs(
@@ -546,7 +567,8 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
             IReadOnlyList<string>? tableTypes,
             string? columnNamePattern)
         {
-            return this.TraceActivity((ActivityWithPii? activity) =>
+#pragma warning disable CS0618 // Type or member is obsolete
+            return this.TraceActivity(activity =>
             {
                 StringArray.Builder catalogNameBuilder = new StringArray.Builder();
                 List<IArrowArray?> catalogDbSchemasValues = new List<IArrowArray?>();
@@ -601,6 +623,7 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
 
                 return dataArrays;
             });
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         private StructArray GetDbSchemas(
@@ -611,7 +634,8 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
             IReadOnlyList<string>? tableTypes,
             string? columnNamePattern)
         {
-            return this.TraceActivity((ActivityWithPii? activity) =>
+#pragma warning disable CS0618 // Type or member is obsolete
+            return this.TraceActivity(activity =>
             {
                 StringArray.Builder dbSchemaNameBuilder = new StringArray.Builder();
                 List<IArrowArray?> dbSchemaTablesValues = new List<IArrowArray?>();
@@ -665,6 +689,7 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
                     dataArrays,
                     nullBitmapBuffer.Build());
             });
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         private StructArray GetTableSchemas(
@@ -675,7 +700,8 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
             IReadOnlyList<string>? tableTypes,
             string? columnNamePattern)
         {
-            return this.TraceActivity((ActivityWithPii? activity) =>
+#pragma warning disable CS0618 // Type or member is obsolete
+            return this.TraceActivity((Activity? activity) =>
             {
                 StringArray.Builder tableNameBuilder = new StringArray.Builder();
                 StringArray.Builder tableTypeBuilder = new StringArray.Builder();
@@ -759,6 +785,7 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
                     dataArrays,
                     nullBitmapBuffer.Build());
             });
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         private StructArray GetColumnSchema(
@@ -767,7 +794,8 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
             string table,
             string? columnNamePattern)
         {
-            return this.TraceActivity((ActivityWithPii? activity) =>
+#pragma warning disable CS0618 // Type or member is obsolete
+            return this.TraceActivity((Activity? activity) =>
             {
                 StringArray.Builder columnNameBuilder = new StringArray.Builder();
                 Int32Array.Builder ordinalPositionBuilder = new Int32Array.Builder();
@@ -875,6 +903,7 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
                     dataArrays,
                     nullBitmapBuffer.Build());
             });
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         private StructArray GetConstraintSchema(
@@ -884,7 +913,8 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
             string table,
             string? columnNamePattern)
         {
-            return this.TraceActivity((ActivityWithPii? activity) =>
+#pragma warning disable CS0618 // Type or member is obsolete
+            return this.TraceActivity((Activity? activity) =>
             {
                 StringArray.Builder constraintNameBuilder = new StringArray.Builder();
                 StringArray.Builder constraintTypeBuilder = new StringArray.Builder();
@@ -947,6 +977,7 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
                     dataArrays,
                     nullBitmapBuffer.Build());
             });
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         private StringArray GetConstraintColumnNames(
@@ -955,7 +986,8 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
             string table,
             string constraintName)
         {
-            return this.TraceActivity((ActivityWithPii? activity) =>
+#pragma warning disable CS0618 // Type or member is obsolete
+            return this.TraceActivity((Activity? activity) =>
             {
                 string query = string.Format("SELECT * FROM `{0}`.`{1}`.INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE table_name = '{2}' AND constraint_name = '{3}' ORDER BY ordinal_position",
                Sanitize(catalog), Sanitize(dbSchema), Sanitize(table), Sanitize(constraintName));
@@ -975,6 +1007,7 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
 
                 return constraintColumnNamesBuilder.Build();
             });
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         private StructArray GetConstraintsUsage(
@@ -983,7 +1016,8 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
             string table,
             string constraintName)
         {
-            return this.TraceActivity((ActivityWithPii? activity) =>
+#pragma warning disable CS0618 // Type or member is obsolete
+            return this.TraceActivity((Activity? activity) =>
             {
                 StringArray.Builder constraintFkCatalogBuilder = new StringArray.Builder();
                 StringArray.Builder constraintFkDbSchemaBuilder = new StringArray.Builder();
@@ -1031,6 +1065,7 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
                     dataArrays,
                     nullBitmapBuffer.Build());
             });
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         private string PatternToRegEx(string? pattern)
@@ -1130,7 +1165,8 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
 
         public override Schema GetTableSchema(string? catalog, string? dbSchema, string tableName)
         {
-            return this.TraceActivity((ActivityWithPii? activity) =>
+#pragma warning disable CS0618 // Type or member is obsolete
+            return this.TraceActivity((Activity? activity) =>
             {
                 string query = string.Format("SELECT * FROM `{0}`.`{1}`.INFORMATION_SCHEMA.COLUMNS WHERE table_name = '{2}'",
                 Sanitize(catalog), Sanitize(dbSchema), Sanitize(tableName));
@@ -1149,6 +1185,7 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
 
                 return new Schema(fields, null);
             });
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         private Field DescToField(BigQueryRow row)

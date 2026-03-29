@@ -125,7 +125,8 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
 
         private async Task<QueryResult> ExecuteQueryAsyncInternal(CancellationToken cancellationToken = default)
         {
-            return await this.TraceActivityAsync(async (ActivityWithPii? activity) =>
+#pragma warning disable CS0618 // Type or member is obsolete
+            return await this.TraceActivityAsync(async activity =>
             {
                 if (IsMetadataCommand)
                 {
@@ -161,6 +162,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
                 Schema schema = GetSchemaFromMetadata(metadata);
                 return new QueryResult(-1, Connection.NewReader(this, schema, response, metadata));
             }, ClassName + "." + nameof(ExecuteQueryAsyncInternal));
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         public override async ValueTask<QueryResult> ExecuteQueryAsync()
@@ -186,7 +188,8 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
 
         private async Task<UpdateResult> ExecuteUpdateAsyncInternal(CancellationToken cancellationToken = default)
         {
-            return await this.TraceActivityAsync(async (ActivityWithPii? activity) =>
+#pragma warning disable CS0618 // Type or member is obsolete
+            return await this.TraceActivityAsync(async (Activity? activity) =>
             {
                 long? affectedRows = null;
                 try
@@ -233,14 +236,16 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
                 }
                 finally
                 {
-                    activity?.AddTag(SemanticConventions.Db.Response.ReturnedRows, affectedRows ?? -1, isPii: false);
+                    activity?.AddTag(SemanticConventions.Db.Response.ReturnedRows, affectedRows ?? -1);
                 }
             }, ClassName + "." + nameof(ExecuteUpdateAsyncInternal));
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         public override async Task<UpdateResult> ExecuteUpdateAsync()
         {
-            return await this.TraceActivityAsync(async (ActivityWithPii? _) =>
+#pragma warning disable CS0618 // Type or member is obsolete
+            return await this.TraceActivityAsync(async (Activity? _) =>
             {
                 CancellationTokenSource ts = SetTokenSource();
                 try
@@ -260,6 +265,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
                     DisposeTokenSource();
                 }
             }, ClassName + "." + nameof(ExecuteUpdateAsync));
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         public override void SetOption(string key, string value)
@@ -330,19 +336,20 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
 
         protected async Task<IResponse> ExecuteStatementAsync(CancellationToken cancellationToken = default)
         {
-            return await this.TraceActivityAsync(async (ActivityWithPii? activity) =>
+#pragma warning disable CS0618 // Type or member is obsolete
+            return await this.TraceActivityAsync(async activity =>
             {
                 if (Connection.SessionHandle == null)
                 {
                     throw new InvalidOperationException("Invalid session");
                 }
 
-                activity?.AddTag(SemanticConventions.Db.Client.Connection.SessionId, () => ActivityWithPii.ToHexString(Connection.SessionHandle.SessionId.Guid), isPii: false);
+                activity?.AddTag(SemanticConventions.Db.Client.Connection.SessionId, Connection.SessionHandle.SessionId.Guid, "N");
                 TExecuteStatementReq executeRequest = new TExecuteStatementReq(Connection.SessionHandle, SqlQuery!);
                 SetStatementProperties(executeRequest);
                 IResponse response = await Connection.Client.ExecuteStatement(executeRequest, cancellationToken);
                 HiveServer2Connection.HandleThriftResponse(response.Status!, activity);
-                activity?.AddTag(SemanticConventions.Db.Response.OperationId, () => ActivityWithPii.ToHexString(response.OperationHandle!.OperationId.Guid), isPii: false);
+                activity?.AddTag(SemanticConventions.Db.Response.OperationId, response.OperationHandle!.OperationId.Guid, "N");
 
                 // Capture direct results if they're available
                 if (response.DirectResults != null)
@@ -356,6 +363,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
                 }
                 return response;
             }, ClassName + "." + nameof(ExecuteStatementAsync));
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         protected internal int PollTimeMilliseconds { get; private set; } = HiveServer2Connection.PollTimeMillisecondsDefault;
@@ -426,10 +434,10 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
 
         private async Task<QueryResult> ExecuteMetadataCommandQuery(CancellationToken cancellationToken)
         {
-            return await this.TraceActivityAsync(async (ActivityWithPii? activity) =>
+#pragma warning disable CS0618 // Type or member is obsolete
+            return await this.TraceActivityAsync(async (Activity? activity) =>
             {
-                // This is just the name of the metadata query and does not contain sensitive information, so safe to log as-is without redaction
-                activity?.AddTag(SemanticConventions.Db.Query.Text, SqlQuery ?? "<null>", isPii: false);
+                activity?.AddTag(SemanticConventions.Db.Query.Text, SqlQuery ?? "<null>");
                 return SqlQuery?.ToLowerInvariant() switch
                 {
                     GetCatalogsCommandName => await GetCatalogsAsync(cancellationToken),
@@ -443,6 +451,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
                     _ => throw new NotSupportedException($"Metadata command '{SqlQuery}' is not supported. Supported metadata commands: {SupportedMetadataCommands}"),
                 };
             }, ClassName + "." + nameof(ExecuteMetadataCommandQuery));
+#pragma warning restore CS0618 // Type or member is obsolete
         }
         // This method is for internal use only and is not available for external use.
         // It retrieves cross-reference data where the current table is treated as a foreign table.
@@ -568,7 +577,8 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
 
         private async Task<QueryResult> GetQueryResult(IResponse response, CancellationToken cancellationToken)
         {
-            return await this.TraceActivityAsync(async (ActivityWithPii? activity) =>
+#pragma warning disable CS0618 // Type or member is obsolete
+            return await this.TraceActivityAsync(async activity =>
             {
                 HiveServer2Connection.HandleThriftResponse(response.Status!, activity);
                 if (Connection.TryGetDirectResults(response.DirectResults, out QueryResult? result))
@@ -581,6 +591,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
 
                 return new QueryResult(-1, Connection.NewReader(this, schema, response));
             }, ClassName + "." + nameof(GetQueryResult));
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         protected internal QueryResult EnhanceGetColumnsResult(Schema originalSchema, IReadOnlyList<IArrowArray> originalData,
@@ -1053,14 +1064,16 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
         /// <inheritdoc/>
         public override void Cancel()
         {
-            this.TraceActivity((ActivityWithPii? _) =>
+#pragma warning disable CS0618 // Type or member is obsolete
+            this.TraceActivity((Activity? _) =>
             {
                 // This will cancel any operation using the current token source
                 CancelTokenSource();
             }, ClassName + "." + nameof(Cancel));
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
-        private async Task CancelOperationAsync(ActivityWithPii? activity, TOperationHandle? operationHandle)
+        private async Task CancelOperationAsync(Activity? activity, TOperationHandle? operationHandle)
         {
             if (operationHandle == null)
             {
@@ -1069,17 +1082,19 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
             using CancellationTokenSource cancellationTokenSource = ApacheUtility.GetCancellationTokenSource(QueryTimeoutSeconds, ApacheUtility.TimeUnit.Seconds);
             try
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 activity?.AddEvent(
                     "db.operation.cancel_operation.starting",
-                    [new(SemanticConventions.Db.Operation.OperationId, new Guid(operationHandle.OperationId.Guid).ToString("N"))],
-                    isPii: false);
+                    [new(SemanticConventions.Db.Operation.OperationId, new Guid(operationHandle.OperationId.Guid).ToString("N"))]);
+#pragma warning restore CS0618 // Type or member is obsolete
                 TCancelOperationReq req = new(operationHandle);
                 TCancelOperationResp resp = await Client.CancelOperation(req, cancellationTokenSource.Token);
                 HiveServer2Connection.HandleThriftResponse(resp.Status, activity);
+#pragma warning disable CS0618 // Type or member is obsolete
                 activity?.AddEvent(
                     "db.operation.cancel_operation.completed",
-                    [new(SemanticConventions.Db.Response.StatusCode, resp.Status.StatusCode.ToString())],
-                    isPii: false);
+                    [new(SemanticConventions.Db.Response.StatusCode, resp.Status.StatusCode.ToString())]);
+#pragma warning disable CS0618 // Type or member is obsolete
             }
             catch (Exception ex)
             {

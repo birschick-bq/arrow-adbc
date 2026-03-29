@@ -23,7 +23,6 @@ using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
-using Apache.Arrow.Adbc.Tracing;
 using Apache.Hive.Service.Rpc.Thrift;
 using Thrift;
 using Thrift.Protocol;
@@ -97,7 +96,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
 
         protected override TTransport CreateTransport()
         {
-            ActivityWithPii? activity = ActivityWithPii.Wrap(Activity.Current);
+            Activity? activity = Activity.Current;
 
             // Required properties (validated previously)
             Properties.TryGetValue(HiveServer2Parameters.HostName, out string? hostName);
@@ -138,13 +137,13 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
             {
                 baseTransport = new TSocketTransport(hostName!, portValue, connectClient, config: thriftConfig);
             }
-            activity?.AddTag(ActivityKeys.Encrypted, TlsOptions.IsTlsEnabled, isPii: false);
+            activity?.AddTag(ActivityKeys.Encrypted, TlsOptions.IsTlsEnabled);
 
             TBufferedTransport bufferedTransport = new TBufferedTransport(baseTransport);
             switch (authTypeValue)
             {
                 case HiveServer2AuthType.None:
-                    activity?.AddTag(ActivityKeys.TransportType, "buffered_socket", isPii: false);
+                    activity?.AddTag(ActivityKeys.TransportType, "buffered_socket");
                     return bufferedTransport;
 
                 case HiveServer2AuthType.Basic:
@@ -158,7 +157,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
 
                     PlainSaslMechanism saslMechanism = new(username, password);
                     TSaslTransport saslTransport = new(bufferedTransport, saslMechanism, config: thriftConfig);
-                    activity?.AddTag(ActivityKeys.TransportType, "sasl_buffered_socket", isPii: false);
+                    activity?.AddTag(ActivityKeys.TransportType, "sasl_buffered_socket");
                     return new TFramedTransport(saslTransport);
 
                 default:
