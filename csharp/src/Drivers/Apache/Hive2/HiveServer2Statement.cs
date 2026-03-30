@@ -240,7 +240,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
 
         public override async Task<UpdateResult> ExecuteUpdateAsync()
         {
-            return await this.TraceActivityAsync(async activity =>
+            return await this.TraceActivityAsync(async _ =>
             {
                 CancellationTokenSource ts = SetTokenSource();
                 try
