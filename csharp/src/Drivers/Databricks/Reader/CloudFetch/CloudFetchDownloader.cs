@@ -200,7 +200,6 @@ namespace Apache.Arrow.Adbc.Drivers.Databricks.Reader.CloudFetch
 
         private async Task DownloadFilesAsync(CancellationToken cancellationToken)
         {
-#pragma warning disable CS0618 // Type or member is obsolete
             await this.TraceActivityAsync(async activity =>
             {
                 await Task.Yield();
@@ -362,12 +361,10 @@ namespace Apache.Arrow.Adbc.Drivers.Databricks.Reader.CloudFetch
                     }
                 }
             });
-#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         private async Task DownloadFileAsync(IDownloadResult downloadResult, CancellationToken cancellationToken)
         {
-#pragma warning disable CS0618 // Type or member is obsolete
             await this.TraceActivityAsync(async (Activity? activity) =>
             {
                 string url = downloadResult.Link.FileLink;
@@ -559,7 +556,6 @@ namespace Apache.Arrow.Adbc.Drivers.Databricks.Reader.CloudFetch
                 // Set the download as completed with the original size
                 downloadResult.SetCompleted(dataStream, size);
             }, activityName: "DownloadFile");
-#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         private void SetError(Exception ex, Activity? activity = null)

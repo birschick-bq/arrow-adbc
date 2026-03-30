@@ -39,7 +39,7 @@ namespace Apache.Arrow.Adbc.Tracing
         /// status is set to <see cref="ActivityStatusCode.Error"/> and an Activity <see cref="ActivityEvent"/> is added to the activity
         /// and finally the exception is rethrown.
         /// </remarks>
-        [Obsolete("This method is deprecated. Please use TraceActivity overloads that take ActivityWithPii instead of Activity to avoid accidentally logging PII data.")]
+        // TODO: [Obsolete("This method is deprecated. Please use TraceActivity overloads that take ActivityWithPii instead of Activity to avoid accidentally logging PII data.")]
         public static void TraceActivity(this IActivityTracer tracer, Action<Activity?> call, [CallerMemberName] string? activityName = default, string? traceParent = default)
         {
             tracer.Trace.TraceActivity(call, activityName, traceParent ?? tracer.TraceParent);
@@ -59,7 +59,7 @@ namespace Apache.Arrow.Adbc.Tracing
         /// If an exception is thrown by the delegate, the Activity status is set to <see cref="ActivityStatusCode.Error"/>
         /// and an Event <see cref="ActivityEvent"/> is added to the activity and finally the exception is rethrown.
         /// </remarks>
-        [Obsolete("This method is deprecated. Please use TraceActivity overloads that take ActivityWithPii instead of Activity to avoid accidentally logging PII data.")]
+        // TODO: [Obsolete("This method is deprecated. Please use TraceActivity overloads that take ActivityWithPii instead of Activity to avoid accidentally logging PII data.")]
         public static T TraceActivity<T>(this IActivityTracer tracer, Func<Activity?, T> call, [CallerMemberName] string? activityName = null, string? traceParent = null)
         {
             Type type = typeof(T);
@@ -84,7 +84,7 @@ namespace Apache.Arrow.Adbc.Tracing
         /// If an exception is thrown by the delegate, the Activity status is set to <see cref="ActivityStatusCode.Error"/>
         /// and an Event <see cref="ActivityEvent"/> is added to the activity and finally the exception is rethrown.
         /// </remarks>
-        [Obsolete("This method is deprecated. Please use TraceActivity overloads that take ActivityWithPii instead of Activity to avoid accidentally logging PII data.")]
+        // TODO: [Obsolete("This method is deprecated. Please use TraceActivity overloads that take ActivityWithPii instead of Activity to avoid accidentally logging PII data.")]
         public static Task TraceActivityAsync(this IActivityTracer tracer, Func<Activity?, Task> call, [CallerMemberName] string? activityName = null, string? traceParent = null)
         {
             return tracer.Trace.TraceActivityAsync(call, activityName, traceParent ?? tracer.TraceParent);
@@ -104,7 +104,7 @@ namespace Apache.Arrow.Adbc.Tracing
         /// If an exception is thrown by the delegate, the Activity status is set to <see cref="ActivityStatusCode.Error"/>
         /// and an Event <see cref="ActivityEvent"/> is added to the activity and finally the exception is rethrown.
         /// </remarks>
-        [Obsolete("This method is deprecated. Please use TraceActivity overloads that take ActivityWithPii instead of Activity to avoid accidentally logging PII data.")]
+        // TODO: [Obsolete("This method is deprecated. Please use TraceActivity overloads that take ActivityWithPii instead of Activity to avoid accidentally logging PII data.")]
         public static Task<T> TraceActivityAsync<T>(this IActivityTracer tracer, Func<Activity?, Task<T>> call, [CallerMemberName] string? activityName = null, string? traceParent = null)
         {
             return tracer.Trace.TraceActivityAsync(call, activityName, traceParent ?? tracer.TraceParent);

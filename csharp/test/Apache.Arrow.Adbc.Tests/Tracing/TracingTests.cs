@@ -375,7 +375,7 @@ namespace Apache.Arrow.Adbc.Testing.Tracing
                 IReadOnlyList<KeyValuePair<string, object?>> tags,
                 string traceParent)
             {
-                _trace.TraceActivity((activity) =>
+                _trace.TraceActivity(activity =>
                 {
                     foreach (KeyValuePair<string, object?> tag in tags)
                     {
