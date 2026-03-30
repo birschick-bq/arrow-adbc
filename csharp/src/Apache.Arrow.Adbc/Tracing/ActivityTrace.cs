@@ -251,8 +251,11 @@ namespace Apache.Arrow.Adbc.Tracing
         /// <summary>
         /// Invokes the delegate within the context of a new started <see cref="Activity"/>.
         /// </summary>
+        /// <param name="activityName">The name of the activity to start.</param>
         /// <param name="call">The delegate to call within the context of a newly started <see cref="ActivityWithPii"/></param>
         /// <param name="methodName">The name of the method for the activity.</param>
+        /// <param name="traceParent">The trace parent context, which is used to link the activity to a distributed trace.</param>
+        /// <param name="exceptionHasPii">An indicator that should be set to true if the exception contains PII data and should be treated accordingly when added to the activity.</param>
         /// <returns>Returns a new <see cref="ActivityWithPii"/> object if there is any listener to the Activity, returns null otherwise</returns>
         /// <remarks>
         /// Creates and starts a new <see cref="ActivityWithPii"/> object if there is any listener for the ActivitySource.
@@ -280,8 +283,10 @@ namespace Apache.Arrow.Adbc.Tracing
         /// Invokes the delegate within the context of a new started <see cref="Activity"/>.
         /// </summary>
         /// <typeparam name="T">The return type for the delegate.</typeparam>
+        /// <param name="activityName">The name of the activity to start.</param>
         /// <param name="call">The delegate to call within the context of a newly started <see cref="Activity"/></param>
-        /// <param name="methodName">The name of the method for the activity.</param>
+        /// <param name="traceParent">The trace parent context, which is used to link the activity to a distributed trace.</param>
+        /// <param name="exceptionHasPii">An indicator that should be set to true if the exception contains PII data and should be treated accordingly when added to the activity.</param>
         /// <returns>The result of the call to the delegate.</returns>
         /// <remarks>
         /// Creates and starts a new <see cref="Activity"/> object if there is any listener for the ActivitySource.
@@ -309,8 +314,10 @@ namespace Apache.Arrow.Adbc.Tracing
         /// <summary>
         /// Invokes the delegate within the context of a new started <see cref="Activity"/>.
         /// </summary>
+        /// <param name="activityName">The name of the activity to start.</param>
         /// <param name="call">The delegate to call within the context of a newly started <see cref="Activity"/></param>
-        /// <param name="methodName">The name of the method for the activity.</param>
+        /// <param name="traceParent">The trace parent context, which is used to link the activity to a distributed trace.</param>
+        /// <param name="exceptionHasPii">An indicator that should be set to true if the exception contains PII data and should be treated accordingly when added to the activity.</param>
         /// <returns></returns>
         /// <remarks>
         /// Creates and starts a new <see cref="Activity"/> object if there is any listener for the ActivitySource.
@@ -338,8 +345,10 @@ namespace Apache.Arrow.Adbc.Tracing
         /// Invokes the delegate within the context of a new started <see cref="Activity"/>.
         /// </summary>
         /// <typeparam name="T">The return type for the delegate.</typeparam>
+        /// <param name="activityName">The name of the activity to start.</param>
         /// <param name="call">The delegate to call within the context of a newly started <see cref="Activity"/></param>
-        /// <param name="methodName">The name of the method for the activity.</param>
+        /// <param name="traceParent">The trace parent context, which is used to link the activity to a distributed trace.</param>
+        /// <param name="exceptionHasPii">An indicator that should be set to true if the exception contains PII data and should be treated accordingly when added to the activity.</param>
         /// <returns>The result of the call to the delegate.</returns>
         /// <remarks>
         /// Creates and starts a new <see cref="Activity"/> object if there is any listener for the ActivitySource.
@@ -368,8 +377,10 @@ namespace Apache.Arrow.Adbc.Tracing
         /// Invokes the delegate within the context of a new started <see cref="Activity"/>.
         /// </summary>
         /// <param name="activitySource">The <see cref="ActivitySource"/> to start the <see cref="Activity"/> on.</param>
+        /// <param name="activityName">The name of the activity to start.</param>
         /// <param name="call">The delegate to call within the context of a newly started <see cref="Activity"/></param>
-        /// <param name="methodName">The name of the method for the activity.</param>
+        /// <param name="traceParent">The trace parent context, which is used to link the activity to a distributed trace.</param>
+        /// <param name="exceptionHasPii">An indicator that should be set to true if the exception contains PII data and should be treated accordingly when added to the activity.</param>
         /// <returns></returns>
         /// <remarks>
         /// Creates and starts a new <see cref="Activity"/> object if there is any listener for the ActivitySource.
@@ -398,8 +409,10 @@ namespace Apache.Arrow.Adbc.Tracing
         /// </summary>
         /// <typeparam name="T">The return type for the delegate.</typeparam>
         /// <param name="activitySource">The <see cref="ActivitySource"/> to start the <see cref="Activity"/> on.</param>
+        /// <param name="activityName">The name of the activity to start.</param>
         /// <param name="call">The delegate to call within the context of a newly started <see cref="Activity"/></param>
-        /// <param name="methodName">The name of the method for the activity.</param>
+        /// <param name="traceParent">The trace parent context, which is used to link the activity to a distributed trace.</param>
+        /// <param name="exceptionHasPii">An indicator that should be set to true if the exception contains PII data and should be treated accordingly when added to the activity.</param>
         /// <returns>The result of the call to the delegate.</returns>
         /// <remarks>
         /// Creates and starts a new <see cref="Activity"/> object if there is any listener for the ActivitySource.
