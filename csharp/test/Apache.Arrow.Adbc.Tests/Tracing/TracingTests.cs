@@ -344,29 +344,29 @@ namespace Apache.Arrow.Adbc.Testing.Tracing
 
             internal void MethodWithActivity()
             {
-                _trace.TraceActivity(_ => { }, exceptionHasPii: true);
+                _trace.TraceActivity("MethodWithActivity", _ => { }, exceptionHasPii: true);
             }
 
             internal void MethodWithActivity(string activityName, string? traceParent = default)
             {
-                _trace.TraceActivity(activity => { }, activityName: activityName, traceParent: traceParent, exceptionHasPii: true);
+                _trace.TraceActivity(activityName, activity => { }, traceParent: traceParent, exceptionHasPii: true);
             }
 
             internal void MethodWithActivityRecursive(string activityName, int recurseCount)
             {
-                _trace.TraceActivity(_ =>
+                _trace.TraceActivity(activityName + recurseCount.ToString(), _ =>
                 {
                     recurseCount--;
                     if (recurseCount > 0)
                     {
                         MethodWithActivityRecursive(activityName, recurseCount);
                     }
-                }, activityName: activityName + recurseCount.ToString(), exceptionHasPii: true);
+                }, exceptionHasPii: true);
             }
 
             internal void MethodWithEvent(string eventName)
             {
-                _trace.TraceActivity((ActivityWithPii? activity) => activity?.AddEvent(eventName));
+                _trace.TraceActivity("MethodWithEvent", (ActivityWithPii? activity) => activity?.AddEvent(eventName));
             }
 
             internal void MethodWithAllProperties(
@@ -375,7 +375,7 @@ namespace Apache.Arrow.Adbc.Testing.Tracing
                 IReadOnlyList<KeyValuePair<string, object?>> tags,
                 string traceParent)
             {
-                _trace.TraceActivity(activity =>
+                _trace.TraceActivity(activityName, activity =>
                 {
                     foreach (KeyValuePair<string, object?> tag in tags)
                     {
@@ -384,7 +384,7 @@ namespace Apache.Arrow.Adbc.Testing.Tracing
                     }
                     activity?.AddEvent(eventName, tags)?
                         .AddLink(traceParent, tags);
-                }, activityName: activityName, traceParent: traceParent, exceptionHasPii: true);
+                }, traceParent: traceParent, exceptionHasPii: true);
             }
 
             protected virtual void Dispose(bool disposing)
@@ -416,7 +416,7 @@ namespace Apache.Arrow.Adbc.Testing.Tracing
 
             public void MethodWithActivity()
             {
-                this.TraceActivity((ActivityWithPii? activity) =>
+                this.TraceActivity("MethodWithActivity", (ActivityWithPii? activity) =>
                 {
                     activity?.AddTag("exampleTag", "exampleValue")
                         .AddBaggage("exampleBaggage", "exampleBaggageValue")
@@ -428,7 +428,7 @@ namespace Apache.Arrow.Adbc.Testing.Tracing
             public async Task<bool> MethodWithInvalidAsyncTraceActivity1()
             {
                 // This method is intended to demonstrate incorrect usage of TraceActivity with async methods.
-                return await this.TraceActivity(async (ActivityWithPii? activity) =>
+                return await this.TraceActivity("MethodWithInvalidAsyncTraceActivity1", async (ActivityWithPii? activity) =>
                 {
                     await Task.Delay(1);
                     return true;
@@ -438,7 +438,7 @@ namespace Apache.Arrow.Adbc.Testing.Tracing
             public async Task MethodWithInvalidAsyncTraceActivity2()
             {
                 // This method is intended to demonstrate incorrect usage of TraceActivity with async methods.
-                await this.TraceActivity(async (ActivityWithPii? activity) =>
+                await this.TraceActivity("MethodWithInvalidAsyncTraceActivity2", async (ActivityWithPii? activity) =>
                 {
                     await Task.Delay(1);
                     return;
@@ -448,7 +448,7 @@ namespace Apache.Arrow.Adbc.Testing.Tracing
             public async ValueTask<bool> MethodWithInvalidAsyncTraceActivity3()
             {
                 // This method is intended to demonstrate incorrect usage of TraceActivity with async methods.
-                return await this.TraceActivity(async (ActivityWithPii? activity) =>
+                return await this.TraceActivity("MethodWithInvalidAsyncTraceActivity3", async (ActivityWithPii? activity) =>
                 {
                     await Task.Delay(1);
                     return true;
@@ -458,7 +458,7 @@ namespace Apache.Arrow.Adbc.Testing.Tracing
             public async ValueTask MethodWithInvalidAsyncTraceActivity4()
             {
                 // This method is intended to demonstrate incorrect usage of TraceActivity with async methods.
-                await this.TraceActivity(async (ActivityWithPii? activity) =>
+                await this.TraceActivity("MethodWithInvalidAsyncTraceActivity4", async (ActivityWithPii? activity) =>
                 {
                     await Task.Delay(1);
                     return;
@@ -468,7 +468,7 @@ namespace Apache.Arrow.Adbc.Testing.Tracing
             public async Task<bool> MethodWithInvalidAsyncTraceActivity5()
             {
                 // This method is intended to demonstrate incorrect usage of TraceActivity with async methods.
-                return await this.TraceActivity(async (ActivityWithPii? activity) =>
+                return await this.TraceActivity("MethodWithInvalidAsyncTraceActivity5", async (ActivityWithPii? activity) =>
                 {
                     await Task.Delay(1);
                     return await new AwaitableBool();
@@ -509,10 +509,10 @@ namespace Apache.Arrow.Adbc.Testing.Tracing
 
             public void MethodWithActivity(string activityName)
             {
-                this.TraceActivity((ActivityWithPii? activity) =>
+                this.TraceActivity(activityName, (ActivityWithPii? activity) =>
                 {
                     activity?.AddTag("testTag", "testValue");
-                }, activityName);
+                });
             }
 
             public override void SetOption(string key, string? value)

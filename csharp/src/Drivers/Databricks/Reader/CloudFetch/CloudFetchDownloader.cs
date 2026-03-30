@@ -365,7 +365,7 @@ namespace Apache.Arrow.Adbc.Drivers.Databricks.Reader.CloudFetch
 
         private async Task DownloadFileAsync(IDownloadResult downloadResult, CancellationToken cancellationToken)
         {
-            await this.TraceActivityAsync(async (Activity? activity) =>
+            await this.TraceActivityAsync(async activity =>
             {
                 string url = downloadResult.Link.FileLink;
                 string sanitizedUrl = SanitizeUrl(downloadResult.Link.FileLink);

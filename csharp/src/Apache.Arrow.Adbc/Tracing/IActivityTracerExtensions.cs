@@ -127,12 +127,12 @@ namespace Apache.Arrow.Adbc.Tracing
         /// </remarks>
         public static void TraceActivity(
             this IActivityTracer tracer,
+            string activityName,
             Action<ActivityWithPii?> call,
-            [CallerMemberName] string? activityName = default,
             string? traceParent = default,
             bool exceptionHasPii = true)
         {
-            tracer.Trace.TraceActivity(call, activityName, traceParent ?? tracer.TraceParent, exceptionHasPii);
+            tracer.Trace.TraceActivity(activityName, call, traceParent ?? tracer.TraceParent, exceptionHasPii);
         }
 
         /// <summary>
@@ -151,8 +151,8 @@ namespace Apache.Arrow.Adbc.Tracing
         /// </remarks>
         public static T TraceActivity<T>(
             this IActivityTracer tracer,
+            string activityName,
             Func<ActivityWithPii?, T> call,
-            [CallerMemberName] string? activityName = null,
             string? traceParent = null,
             bool exceptionHasPii = true)
         {
@@ -162,7 +162,7 @@ namespace Apache.Arrow.Adbc.Tracing
                 throw new InvalidOperationException($"Invalid return type ('{type.Name}') for synchronous method call. Please use {nameof(TraceActivityAsync)}");
             }
 
-            return tracer.Trace.TraceActivity(call, activityName, traceParent ?? tracer.TraceParent, exceptionHasPii);
+            return tracer.Trace.TraceActivity(activityName, call, traceParent ?? tracer.TraceParent, exceptionHasPii);
         }
 
         /// <summary>
@@ -180,12 +180,12 @@ namespace Apache.Arrow.Adbc.Tracing
         /// </remarks>
         public static Task TraceActivityAsync(
             this IActivityTracer tracer,
+            string activityName,
             Func<ActivityWithPii?, Task> call,
-            [CallerMemberName] string? activityName = null,
             string? traceParent = null,
             bool exceptionHasPii = true)
         {
-            return tracer.Trace.TraceActivityAsync(call, activityName, traceParent ?? tracer.TraceParent, exceptionHasPii);
+            return tracer.Trace.TraceActivityAsync(activityName, call, traceParent ?? tracer.TraceParent, exceptionHasPii);
         }
 
         /// <summary>
@@ -204,12 +204,12 @@ namespace Apache.Arrow.Adbc.Tracing
         /// </remarks>
         public static Task<T> TraceActivityAsync<T>(
             this IActivityTracer tracer,
+            string activityName,
             Func<ActivityWithPii?, Task<T>> call,
-            [CallerMemberName] string? activityName = null,
             string? traceParent = null,
             bool exceptionHasPii = true)
         {
-            return tracer.Trace.TraceActivityAsync(call, traceParent ?? tracer.TraceParent, activityName, exceptionHasPii);
+            return tracer.Trace.TraceActivityAsync(activityName, call, traceParent ?? tracer.TraceParent, exceptionHasPii);
         }
     }
 }

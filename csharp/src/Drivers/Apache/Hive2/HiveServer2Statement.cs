@@ -186,8 +186,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
 
         private async Task<UpdateResult> ExecuteUpdateAsyncInternal(CancellationToken cancellationToken = default)
         {
-
-            return await this.TraceActivityAsync(async (Activity? activity) =>
+            return await this.TraceActivityAsync(async activity =>
             {
                 long? affectedRows = null;
                 try
@@ -241,7 +240,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
 
         public override async Task<UpdateResult> ExecuteUpdateAsync()
         {
-            return await this.TraceActivityAsync(async (Activity? _) =>
+            return await this.TraceActivityAsync(async activity =>
             {
                 CancellationTokenSource ts = SetTokenSource();
                 try
@@ -427,7 +426,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
 
         private async Task<QueryResult> ExecuteMetadataCommandQuery(CancellationToken cancellationToken)
         {
-            return await this.TraceActivityAsync(async (Activity? activity) =>
+            return await this.TraceActivityAsync(async activity =>
             {
                 activity?.AddTag(SemanticConventions.Db.Query.Text, SqlQuery ?? "<null>");
                 return SqlQuery?.ToLowerInvariant() switch
@@ -1053,7 +1052,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
         /// <inheritdoc/>
         public override void Cancel()
         {
-            this.TraceActivity((Activity? _) =>
+            this.TraceActivity(_ =>
             {
                 // This will cancel any operation using the current token source
                 CancelTokenSource();

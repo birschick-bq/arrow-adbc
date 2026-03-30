@@ -327,7 +327,7 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
 
         public override void SetOption(string key, string value)
         {
-            this.TraceActivity((Activity? activity) =>
+            this.TraceActivity(activity =>
             {
                 activity?.AddTag(key + ".set", value);
 
@@ -364,7 +364,7 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
 
         public override IArrowArrayStream GetInfo(IReadOnlyList<AdbcInfoCode> codes)
         {
-            return this.TraceActivity((Activity? activity) =>
+            return this.TraceActivity(activity =>
             {
                 const int strValTypeID = 0;
 
@@ -496,7 +496,7 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
             IReadOnlyList<string>? tableTypes,
             string? columnNamePattern)
         {
-            return this.TraceActivity((Activity? activity) =>
+            return this.TraceActivity(activity =>
             {
                 IArrowArray[] dataArrays = GetCatalogs(depth, catalogPattern, dbSchemaPattern,
                     tableNamePattern, tableTypes, columnNamePattern);
@@ -684,7 +684,7 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
             IReadOnlyList<string>? tableTypes,
             string? columnNamePattern)
         {
-            return this.TraceActivity((Activity? activity) =>
+            return this.TraceActivity(activity =>
             {
                 StringArray.Builder tableNameBuilder = new StringArray.Builder();
                 StringArray.Builder tableTypeBuilder = new StringArray.Builder();
@@ -776,7 +776,7 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
             string table,
             string? columnNamePattern)
         {
-            return this.TraceActivity((Activity? activity) =>
+            return this.TraceActivity(activity =>
             {
                 StringArray.Builder columnNameBuilder = new StringArray.Builder();
                 Int32Array.Builder ordinalPositionBuilder = new Int32Array.Builder();
@@ -893,7 +893,7 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
             string table,
             string? columnNamePattern)
         {
-            return this.TraceActivity((Activity? activity) =>
+            return this.TraceActivity(activity =>
             {
                 StringArray.Builder constraintNameBuilder = new StringArray.Builder();
                 StringArray.Builder constraintTypeBuilder = new StringArray.Builder();
@@ -964,7 +964,7 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
             string table,
             string constraintName)
         {
-            return this.TraceActivity((Activity? activity) =>
+            return this.TraceActivity(activity =>
             {
                 string query = string.Format("SELECT * FROM `{0}`.`{1}`.INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE table_name = '{2}' AND constraint_name = '{3}' ORDER BY ordinal_position",
                Sanitize(catalog), Sanitize(dbSchema), Sanitize(table), Sanitize(constraintName));
@@ -992,7 +992,7 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
             string table,
             string constraintName)
         {
-            return this.TraceActivity((Activity? activity) =>
+            return this.TraceActivity(activity =>
             {
                 StringArray.Builder constraintFkCatalogBuilder = new StringArray.Builder();
                 StringArray.Builder constraintFkDbSchemaBuilder = new StringArray.Builder();
@@ -1139,7 +1139,7 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
 
         public override Schema GetTableSchema(string? catalog, string? dbSchema, string tableName)
         {
-            return this.TraceActivity((Activity? activity) =>
+            return this.TraceActivity(activity =>
             {
                 string query = string.Format("SELECT * FROM `{0}`.`{1}`.INFORMATION_SCHEMA.COLUMNS WHERE table_name = '{2}'",
                 Sanitize(catalog), Sanitize(dbSchema), Sanitize(tableName));

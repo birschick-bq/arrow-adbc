@@ -261,7 +261,7 @@ namespace Apache.Arrow.Adbc.Tracing
         /// status is set to <see cref="ActivityStatusCode.Error"/> and an Activity <see cref="ActivityEvent"/> is added to the activity
         /// and finally the exception is rethrown.
         /// </remarks>
-        public void TraceActivity(Action<ActivityWithPii?> call, [CallerMemberName] string? activityName = default, string? traceParent = default, bool exceptionHasPii = true)
+        public void TraceActivity(string activityName, Action<ActivityWithPii?> call, string? traceParent = default, bool exceptionHasPii = true)
         {
             using ActivityWithPii? activity = StartActivityWithPiiInternal(activityName, ActivitySource, traceParent ?? TraceParent);
             try
@@ -290,7 +290,7 @@ namespace Apache.Arrow.Adbc.Tracing
         /// If an exception is thrown by the delegate, the Activity status is set to <see cref="ActivityStatusCode.Error"/>
         /// and an Event <see cref="ActivityEvent"/> is added to the activity and finally the exception is rethrown.
         /// </remarks>
-        public T TraceActivity<T>(Func<ActivityWithPii?, T> call, [CallerMemberName] string? activityName = default, string? traceParent = default, bool exceptionHasPii = true)
+        public T TraceActivity<T>(string activityName, Func<ActivityWithPii?, T> call, string? traceParent = default, bool exceptionHasPii = true)
         {
             using ActivityWithPii? activity = StartActivityWithPiiInternal(activityName, ActivitySource, traceParent ?? TraceParent);
             try
@@ -319,7 +319,7 @@ namespace Apache.Arrow.Adbc.Tracing
         /// If an exception is thrown by the delegate, the Activity status is set to <see cref="ActivityStatusCode.Error"/>
         /// and an Event <see cref="ActivityEvent"/> is added to the activity and finally the exception is rethrown.
         /// </remarks>
-        public async Task TraceActivityAsync(Func<ActivityWithPii?, Task> call, [CallerMemberName] string? activityName = default, string? traceParent = default, bool exceptionHasPii = false)
+        public async Task TraceActivityAsync(string activityName, Func<ActivityWithPii?, Task> call, string? traceParent = default, bool exceptionHasPii = false)
         {
             using ActivityWithPii? activity = StartActivityWithPiiInternal(activityName, ActivitySource, traceParent ?? TraceParent);
             try
@@ -348,7 +348,7 @@ namespace Apache.Arrow.Adbc.Tracing
         /// If an exception is thrown by the delegate, the Activity status is set to <see cref="ActivityStatusCode.Error"/>
         /// and an Event <see cref="ActivityEvent"/> is added to the activity and finally the exception is rethrown.
         /// </remarks>
-        public async Task<T> TraceActivityAsync<T>(Func<ActivityWithPii?, Task<T>> call, [CallerMemberName] string? activityName = default, string? traceParent = default, bool exceptionHasPii = true)
+        public async Task<T> TraceActivityAsync<T>(string activityName, Func<ActivityWithPii?, Task<T>> call, string? traceParent = default, bool exceptionHasPii = true)
         {
             using ActivityWithPii? activity = StartActivityWithPiiInternal(activityName, ActivitySource, traceParent ?? TraceParent);
             try
@@ -378,7 +378,7 @@ namespace Apache.Arrow.Adbc.Tracing
         /// If an exception is thrown by the delegate, the Activity status is set to <see cref="ActivityStatusCode.Error"/>
         /// and an Event <see cref="ActivityEvent"/> is added to the activity and finally the exception is rethrown.
         /// </remarks>
-        public static async Task TraceActivityAsync(ActivitySource activitySource, Func<ActivityWithPii?, Task> call, [CallerMemberName] string? activityName = default, string? traceParent = default, bool exceptionHasPii = true)
+        public static async Task TraceActivityAsync(ActivitySource activitySource, string activityName, Func<ActivityWithPii?, Task> call, string? traceParent = default, bool exceptionHasPii = true)
         {
             using ActivityWithPii? activity = StartActivityWithPiiInternal(activityName, activitySource, traceParent);
             try
@@ -408,7 +408,7 @@ namespace Apache.Arrow.Adbc.Tracing
         /// If an exception is thrown by the delegate, the Activity status is set to <see cref="ActivityStatusCode.Error"/>
         /// and an Event <see cref="ActivityEvent"/> is added to the activity and finally the exception is rethrown.
         /// </remarks>
-        public static async Task<T> TraceActivityAsync<T>(ActivitySource activitySource, Func<ActivityWithPii?, Task<T>> call, [CallerMemberName] string? activityName = default, string? traceParent = default, bool exceptionHasPii = true)
+        public static async Task<T> TraceActivityAsync<T>(ActivitySource activitySource, string activityName, Func<ActivityWithPii?, Task<T>> call, string? traceParent = default, bool exceptionHasPii = true)
         {
             using ActivityWithPii? activity = StartActivityWithPiiInternal(activityName, activitySource, traceParent);
             try

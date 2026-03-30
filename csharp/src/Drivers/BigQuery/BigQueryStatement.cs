@@ -249,7 +249,7 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
 
         public override void Cancel()
         {
-            this.TraceActivity((Activity? _) =>
+            this.TraceActivity(_ =>
             {
                 this.cancellationRegistry.CancelAll();
             });
@@ -710,7 +710,7 @@ namespace Apache.Arrow.Adbc.Drivers.BigQuery
 
             public override async ValueTask<RecordBatch?> ReadNextRecordBatchAsync(CancellationToken cancellationToken = default)
             {
-                return await this.TraceActivityAsync(async (Activity? activity) =>
+                return await this.TraceActivityAsync(async activity =>
                 {
                     if (this.readers == null)
                     {

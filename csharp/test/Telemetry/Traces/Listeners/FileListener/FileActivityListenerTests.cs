@@ -131,7 +131,7 @@ namespace Apache.Arrow.Adbc.Tests.Telemetry.Traces.Listeners.FileListener
 
             public async Task EmulateWorkAsync(string key, string value)
             {
-                await this.TraceActivityAsync(async (ActivityWithPii? activity) =>
+                await this.TraceActivityAsync("EmulateWorkAsync", async (ActivityWithPii? activity) =>
                 {
                     activity?.AddTag(key, value);
                     // Simulate some work

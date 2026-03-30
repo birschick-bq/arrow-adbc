@@ -500,7 +500,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
 
         public override IArrowArrayStream GetObjects(GetObjectsDepth depth, string? catalogPattern, string? dbSchemaPattern, string? tableNamePattern, IReadOnlyList<string>? tableTypes, string? columnNamePattern)
         {
-            return this.TraceActivity((Activity? _) =>
+            return this.TraceActivity(_ =>
             {
                 if (SessionHandle == null)
                 {
@@ -735,7 +735,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
 
         internal async Task PollForResponseAsync(TOperationHandle operationHandle, TCLIService.IAsync client, int pollTimeMilliseconds, CancellationToken cancellationToken = default)
         {
-            await this.TraceActivityAsync(async (Activity? activity) =>
+            await this.TraceActivityAsync(async activity =>
             {
                 activity?.AddEvent("hive2.thrift.poll_start");
                 TGetOperationStatusResp? statusResponse = null;
@@ -1471,7 +1471,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
 
         internal async Task<TRowSet> FetchResultsAsync(TOperationHandle operationHandle, long batchSize = BatchSizeDefault, CancellationToken cancellationToken = default)
         {
-            return await this.TraceActivityAsync(async (Activity? activity) =>
+            return await this.TraceActivityAsync(async activity =>
             {
                 await PollForResponseAsync(operationHandle, Client, PollTimeMillisecondsDefault, cancellationToken);
 
